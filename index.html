@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We Win - Functional UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b1c2c; --bg-card: #15304b; --bg-header: #11283d;
+            --text-light: #ffffff; --text-muted: #a0b2c6;
+            --accent-green: #529626; --accent-blue: #1c75bc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-light); }
+
+        /* Header & Common */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: var(--bg-header); position: sticky; top: 0; z-index: 100;}
+        .logo-section { display: flex; align-items: center; gap: 10px; }
+        .logo-section h2 { color: white; font-style: italic; margin: 0; font-size: 20px;}
+        .header-buttons button { padding: 6px 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 12px;}
+        .btn-login { background-color: transparent; border: 1px solid var(--text-muted); color: var(--text-light); }
+        .btn-register { background-color: var(--accent-green); color: white; }
+
+        /* Sections */
+        .page-section { display: none; padding-bottom: 80px; }
+        .page-section.active { display: block; }
+        .hero-banner { background: linear-gradient(to right, #0a1f33, #15304b); margin: 10px; padding: 20px; border-radius: 10px; }
+        .hero-banner h2 { font-size: 18px; margin-bottom: 5px; }
+        .hero-banner button { background-color: var(--accent-green); color: white; border: none; padding: 8px 15px; border-radius: 5px; margin-top:10px; cursor: pointer;}
+        
+        .section-title { padding: 15px 15px 5px 15px; font-size: 14px; font-weight: bold; text-transform: uppercase; color: var(--text-muted);}
+        
+        /* Live Card */
+        .live-card { background-color: var(--bg-card); margin: 10px 15px; border-radius: 10px; padding: 15px; }
+        .live-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+        .match-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .teams-col { font-weight: bold; font-size: 14px; display: flex; flex-direction: column; gap: 5px;}
+        .score-col { text-align: right; font-size: 14px; font-weight: bold; }
+        
+        /* Modals (Popups) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--bg-header); padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;}
+        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #1a3c5e; background: var(--bg-main); color: white; }
+        .submit-btn { width: 100%; background-color: var(--accent-blue); color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+
+        /* Side Menu */
+        .side-menu { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background-color: var(--bg-header); z-index: 1500; transition: 0.3s; padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
+        .side-menu.open { right: 0; }
+        .menu-header { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #1a3c5e; padding-bottom: 15px; margin-bottom: 15px; }
+        .menu-header img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
+        .menu-item { padding: 15px 0; border-bottom: 1px solid #1a3c5e; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item i { color: var(--text-muted); width: 20px; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background-color: var(--bg-header); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1a3c5e; z-index: 1000;}
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 11px; cursor: pointer; gap: 5px;}
+        .nav-item.active { color: white; }
+        .nav-item i { font-size: 18px; }
+        .nav-item.bet-slip { position: relative; top: -15px; background-color: var(--accent-blue); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; border: 4px solid var(--bg-main);}
+
+       
+        .admin-float-btn { position: fixed; top: 70px; right: 10px; background: red; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; z-index: 500;}
+    </style>
+</head>
+<body>
+<div id="live-notification" style="display: none; background-color: #ff9800; color: white; padding: 10px 15px; font-weight: bold; text-align: center; position: fixed; top: 0; width: 100%; z-index: 3000;">
+    <span id="notif-text">Important Announcement!</span>
+    <span style="float:right; cursor:pointer;" onclick="this.parentElement.style.display='none'">✖</span>
+</div>
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background-color: var(--bg-header); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #1a3c5e;">
+        <div class="logo-section" style="display: flex; align-items: center; gap: 8px;">
+            <h2 style="color: white; font-style: italic; margin: 0; font-size: 18px;">WE WIN</h2>
+            <img src="IND.png" alt="India" style="width: 20px; height: 20px; border-radius: 50%;">
+        </div>
+        
+        <div id="logged-in-ui" style="display: none; align-items: center; gap: 12px;">
+            <div style="text-align: right;">
+                <div id="display-player-name" style="font-size: 13px; font-weight: bold; color: white; line-height: 1.2;">Player</div>
+                <div id="player-balance" style="font-size: 14px; color: #ffcc00; font-weight: bold; line-height: 1.2;">₹ 0.00</div>
+            </div>
+            <button onclick="openModal('depositModal')" style="background: var(--accent-green); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-plus"></i> DEPOSIT
+            </button>
+        </div>
+
+        <div class="header-buttons" id="auth-buttons" style="display: flex; gap: 8px;">
+            <button class="btn-login" onclick="openModal('loginModal')" style="padding: 6px 12px; font-size: 12px;">Log in</button>
+            <button class="btn-register" onclick="openModal('registerModal')" style="padding: 6px 12px; font-size: 12px; background: var(--accent-green); color: white; border: none; border-radius: 4px; font-weight: bold;">Register</button>
+        </div>
+    </header>
+
+    
+
+    <div id="home-section" class="page-section active">
+        <div class="hero-banner">
+            <h2>Welcome to We Win</h2>
+            <p style="font-size: 12px; color: var(--text-muted);">Register now and get 100% bonus on first deposit!</p>
+            <button onclick="openModal('registerModal')">Join Now</button>
+        </div>
+
+        <div class="section-title">🔥 Top Live</div>
+      <div class="section-title">🔥 Live & Upcoming IPL</div>
+<div id="ipl-matches-container">
+    <p style="text-align:center; padding:20px; color:var(--text-muted);">Loading matches...</p>
+</div>
+            
+      
+
+    <div id="sports-section" class="page-section">
+        <div class="section-title">Upcoming Sports Events</div>
+        <div class="live-card">
+            <div class="live-header"><span><i class="fa-solid fa-calendar"></i> IPL 2026</span></div>
+            <div class="match-teams">
+                <div class="teams-col"><span>🏏 Mumbai Indians</span><span>🏏 Chennai Super Kings</span></div>
+                <div class="score-col" style="color: var(--accent-green);">Starts 7:30 PM</div>
+            </div>
+        </div>
+        <div class="live-card">
+            <div class="live-header"><span><i class="fa-solid fa-calendar"></i> T20 World Cup</span></div>
+            <div class="match-teams">
+                <div class="teams-col"><span>🏏 India</span><span>🏏 Australia</span></div>
+                <div class="score-col" style="color: var(--accent-green);">Tomorrow</div>
+            </div>
+        </div>
+    </div>
+    <div id="history-section" class="page-section active" style="padding-bottom: 20px;">
+        <div class="section-title">🏆 IPL 2026 Results (History)</div>
+        
+        <div class="live-card" style="opacity: 0.8; border-left: 4px solid var(--accent-blue);">
+            <div class="live-header">
+                <span><i class="fa-solid fa-calendar-check"></i> 10 April 2026</span>
+                <span style="color: var(--accent-blue); font-weight: bold;">Completed</span>
+            </div>
+            <div class="match-teams" style="margin-bottom: 5px;">
+                <div class="teams-col">
+                    <span style="color: var(--text-muted);">🏏 Mumbai Indians (185/6)</span>
+                    <span style="font-weight: bold; color: white;">🏏 Chennai Super Kings (186/4)</span>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: var(--accent-green); text-align: right; font-weight: bold;">
+                CSK won by 6 wkts
+            </div>
+        </div>
+
+        <div class="live-card" style="opacity: 0.8; border-left: 4px solid var(--accent-blue);">
+            <div class="live-header">
+                <span><i class="fa-solid fa-calendar-check"></i> 09 April 2026</span>
+                <span style="color: var(--accent-blue); font-weight: bold;">Completed</span>
+            </div>
+            <div class="match-teams" style="margin-bottom: 5px;">
+                <div class="teams-col">
+                    <span style="font-weight: bold; color: white;">🏏 Royal Challengers Bangalore (201/3)</span>
+                    <span style="color: var(--text-muted);">🏏 Delhi Capitals (190/8)</span>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: var(--accent-green); text-align: right; font-weight: bold;">
+                RCB won by 11 runs
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home-section', this)">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('sports-section', this)">
+            <i class="fa-solid fa-trophy"></i><span>Sports</span>
+        </div>
+        <div class="nav-item bet-slip">
+            <i class="fa-solid fa-ticket"></i>
+        </div>
+        <div class="nav-item" onclick="openModal('loginModal')">
+            <i class="fa-regular fa-user"></i><span>Log in</span>
+        </div>
+        <div class="nav-item" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i><span>Menu</span>
+        </div>
+    </div>
+
+   <div class="side-menu" id="sideMenu">
+        <div class="close-modal" style="position: static; text-align: right; margin-bottom: 10px;" onclick="toggleMenu()">✖</div>
+        
+        <div class="menu-header">
+            <span>IND</span>
+            <img src="IND.png" alt="India">
+        </div>
+
+        <div class="menu-item" onclick="openChat()">
+            <i class="fa-solid fa-comments"></i> Chat Support / Bot
+        </div>
+
+        <div class="menu-item" onclick="alert('Player History: \n- Played IPL Match\n- Played Casino Slots')">
+            <i class="fa-solid fa-clock-rotate-left"></i> Player History
+        </div>
+<div class="menu-item" onclick="openModal('withdrawModal')">
+    <i class="fa-solid fa-wallet"></i> Withdraw Money
+</div>
+        <div class="menu-item" onclick="checkAdminAccess()" style="border-top: 2px solid #1a3c5e; margin-top: 20px; color: #ff4d4d;">
+            <i class="fa-solid fa-user-shield"></i> Admin Access
+        </div>
+
+        <div class="menu-item" onclick="logout()" id="menu-logout" style="display:none; color: #ff4d4d;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </div>
+    </div>
+
+    <div class="modal" id="registerModal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('registerModal')">✖</span>
+        <h3 style="margin-bottom: 20px; color: var(--accent-green);">Registration</h3>
+        <form onsubmit="handleRegister(event)">
+            <div class="form-group"><label>Player Name</label><input type="text" id="regName" required></div>
+            <div class="form-group"><label>Mobile No. or Email</label><input type="text" id="regId" required></div>
+            <div class="form-group"><label>Create Password</label><input type="password" id="regPass" required></div>
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+    </div>
+</div>
+            
+
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('loginModal')">✖</span>
+            <h3 style="margin-bottom: 20px; color: var(--accent-blue);">Log In</h3>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group"><label>Mobile No. or Email</label><input type="text" id="logId" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="logPass" required></div>
+                <button type="submit" class="submit-btn">Log In</button>
+            </form>
+        </div>
+    </div>
+
+<div class="modal" id="adminModal">
+    <div class="modal-content" style="max-width: 600px; height: 80vh; display: flex; flex-direction: column; background: var(--bg-header); border: 2px solid red;">
+        <span class="close-modal" onclick="closeModal('adminModal')">&times;</span>
+        <h2 style="color: red; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;">We Win Master Admin</h2>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button onclick="showAdminTab('match-tab')" class="submit-btn" style="width:auto; padding: 5px 15px; background:#1a3c5e;">Live Matches</button>
+            <button onclick="updateLiveCricketData()" class="submit-btn" style="background: #2196F3; margin-top: 5px;">
+    <i class="fa-solid fa-sync"></i> Sync with Live API
+</button>
+            <button onclick="showAdminTab('chat-tab')" class="submit-btn" style="width:auto; padding: 5px 15px; background:#1a3c5e;">Chats</button>
+            <button onclick="showAdminTab('notif-tab')" class="submit-btn" style="width:auto; padding: 5px 15px; background:#1a3c5e;">Notifications</button>
+        </div>
+
+        <div id="match-tab" class="admin-pane" style="display: block;">
+            <form onsubmit="updateAdminLiveMatch(event)">
+                <div class="form-group"><label>Tournament Name</label><input type="text" id="adminTour" placeholder="e.g. IPL 2026"></div>
+                
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:2;"><label>Team 1 Name</label><input type="text" id="adminT1" placeholder="Team A"></div>
+                    <div class="form-group" style="flex:1;"><label>Score</label><input type="text" id="adminS1" placeholder="0/0"></div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:2;"><label>Team 2 Name</label><input type="text" id="adminT2" placeholder="Team B"></div>
+                    <div class="form-group" style="flex:1;"><label>Score</label><input type="text" id="adminS2" placeholder="0/0"></div>
+                </div>
+                
+                <button type="submit" class="submit-btn" style="background:red; margin-top:10px;">Update Live Score & Teams</button>
+            </form>
+        </div>
+
+        <div id="chat-tab" class="admin-pane" style="display:none; flex: 1; overflow-y: auto;">
+            <div id="admin-chat-list" style="margin-bottom: 15px; border: 1px solid #333; padding: 10px; min-height: 100px;"></div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="adminReply" placeholder="Reply to player..." style="flex:1; padding:10px; background:var(--bg-main); color:white; border:1px solid #333;">
+                <button onclick="sendAdminReply()" style="background:red; color:white; border:none; padding:10px;">Send</button>
+            </div>
+        </div>
+
+        <div id="notif-tab" class="admin-pane" style="display:none;">
+            <div class="form-group"><label>Live Promo Message</label><input type="text" id="newNotif" placeholder="Enter promo text..."></div>
+            <button onclick="triggerLiveNotif()" class="submit-btn" style="background:orange;">Send Live Notification</button>
+        </div>
+    </div>
+</div>
+<div class="modal" id="chatModal">
+    <div class="modal-content" style="max-width: 380px; padding: 0; display: flex; flex-direction: column; height: 550px; border: 1px solid #1a3c5e;">
+        <div style="background: var(--accent-blue); padding: 15px; color: white; display: flex; align-items: center; justify-content: space-between; border-radius: 10px 10px 0 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; color: var(--accent-blue); font-weight: bold; font-style: italic; font-size: 10px;">WW</div>
+                <div>
+                    <h3 style="margin:0; font-size: 16px;">WE WIN Support</h3>
+                    <span style="font-size: 11px; opacity: 0.9;"><i class="fa-solid fa-circle" style="color: #00ff00; font-size: 8px;"></i> We reply Immediately</span>
+                </div>
+            </div>
+            <span onclick="closeModal('chatModal')" style="cursor:pointer; font-size: 20px;">&times;</span>
+        </div>
+        
+        <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #0b1c2c;">
+            <div style="align-self: flex-start; background: #15304b; color: white; padding: 10px 15px; border-radius: 0 15px 15px 15px; max-width: 80%; font-size: 14px; border: 1px solid #1a3c5e;">
+                How can we help you?
+            </div>
+        </div>
+
+        <div style="padding: 15px; background: #11283d; display: flex; gap: 10px; border-top: 1px solid #1a3c5e;">
+            <input type="text" id="userMsgInput" placeholder="Write your message..." style="flex:1; padding: 12px; border-radius: 25px; border: 1px solid #1a3c5e; background: #0b1c2c; color: white; outline: none;">
+            <button onclick="sendUserMsg()" style="background: var(--accent-green); border: none; color: white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s;">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="modal" id="depositModal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <span class="close-modal" onclick="closeModal('depositModal')">&times;</span>
+        <h3 style="margin-bottom: 20px;">Add Money</h3>
+        
+        <div style="background: var(--bg-main); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <label style="font-size: 12px; color: var(--text-muted);">Enter Amount</label>
+            <input type="number" id="depAmount" value="500" style="width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--accent-blue); color: white; font-size: 24px; text-align: center; outline: none; margin-top: 10px;">
+        </div>
+
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Select Payment Method</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div onclick="processDeposit('G-Pay')" style="background: white; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Google_Pay_Logo_%282020%29.svg/2560px-Google_Pay_Logo_%282020%29.svg.png" style="height: 25px;">
+            </div>
+            <div onclick="processDeposit('UPI')" style="background: white; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo.png/1200px-UPI-Logo.png" style="height: 25px;">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="withdrawModal">
+    <div class="modal-content" style="max-width: 350px;">
+        <span class="close-modal" onclick="closeModal('withdrawModal')">×</span>
+        <h3 style="color: #ff4d4d; margin-bottom: 15px;">Withdrawal Request</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Your Balance: <span id="w-bal" style="color:white; font-weight:bold;">₹ 0.00</span></p>
+        
+        <div class="form-group">
+            <label>Amount to Withdraw</label>
+            <input type="number" id="wAmount" placeholder="Min. ₹500" style="width: 100%; padding: 10px; background: #0b1c2c; color: white; border: 1px solid #333; border-radius: 5px;">
+        </div>
+        <div class="form-group">
+            <label>Enter UPI ID (G-Pay/PhonePe)</label>
+            <input type="text" id="wUpi" placeholder="example@upi" style="width: 100%; padding: 10px; background: #0b1c2c; color: white; border: 1px solid #333; border-radius: 5px;">
+        </div>
+        <button onclick="requestWithdrawal()" class="submit-btn" style="background: #ff4d4d;">Submit Request</button>
+    </div>
+</div>
+   <script>
+    const CRICKET_API_KEY = "6992e96c-45e2-4daa-88a1-0cddfb9b6a50"; 
+    let currentBalance = 0.00; // Balance yahan set kiya
+
+    // --- 1. API Fetch Logic ---
+    async function updateLiveCricketData() {
+        const container = document.getElementById('ipl-matches-container');
+        if (!container) return; 
+
+        try {
+            console.log("Fetching IPL Data...");
+            const apiUrl = `https://api.cricketdata.org/v1/currentMatches?apikey=${CRICKET_API_KEY}`;
+          const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Network Error");
+        const result = await response.json();
+
+            if (result.status !== "success" || !result.data) {
+                container.innerHTML = "<p style='text-align:center; color:#ffcc00; padding:20px;'>API Limit Reached or Error.</p>";
+                return;
+            }
+
+            let iplMatches = result.data.filter(match => 
+                match.name && (match.name.toUpperCase().includes("IPL") || match.name.toUpperCase().includes("INDIAN PREMIER LEAGUE"))
+            );
+
+            if (iplMatches.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:20px;'>Abhi koi IPL match Live ya Upcoming nahi hai.</p>";
+                return;
+            }
+
+            iplMatches.sort((a, b) => (a.ms === "live" ? -1 : 1));
+            container.innerHTML = ""; 
+
+            iplMatches.forEach(match => {
+                let s1 = "0/0", s2 = "0/0";
+                if (match.score && match.score[0]) s1 = `${match.score[0].r}/${match.score[0].w} (${match.score[0].o})`;
+                if (match.score && match.score[1]) s2 = `${match.score[1].r}/${match.score[1].w} (${match.score[1].o})`;
+
+                container.innerHTML += `
+                    <div class="live-card" style="margin-bottom: 10px; border-left: 4px solid ${match.ms === 'live' ? 'red' : 'var(--accent-green)'};">
+                        <div class="live-header">
+                            <span><i class="fa-solid fa-cricket-bat-ball"></i> ${match.name}</span>
+                            <span style="color:${match.ms === 'live' ? 'red' : 'var(--accent-green)'}; font-weight:bold;">
+                                ${match.ms === 'live' ? '● LIVE' : 'UPCOMING'}
+                            </span>
+                        </div>
+                        <div class="match-teams" style="padding: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-weight: bold;">🏏 ${match.teams[0]}</span>
+                                <span style="font-weight: bold;">${s1}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: bold;">🏏 ${match.teams[1]}</span>
+                                <span style="font-weight: bold;">${s2}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            console.log("IPL Sync Done!");
+
+        } catch (error) {
+            console.error("Sync Error:", error);
+            container.innerHTML = "<p style='text-align:center; color:red; padding:20px;'>Connection Error! Refresh karein.</p>";
+        }
+    }
+
+    updateLiveCricketData();
+    setInterval(updateLiveCricketData, 60000);
+
+    // --- 2. Menu & UI Functions ---
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
+    function closeBanner() { document.getElementById('appBanner').style.display = 'none'; }
+    function closeNotification() { document.getElementById('live-notification').style.display = 'none'; }
+    function openChat() { openModal('chatModal'); toggleMenu(); }
+
+    function switchTab(sectionId, element) {
+        document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(nav => nav.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // --- 3. Login / Register Logic ---
+    function handleRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('regName').value;
+        const id = document.getElementById('regId').value;
+        const pass = document.getElementById('regPass').value;
+        localStorage.setItem('weWinUser', JSON.stringify({ name, id, pass }));
+        alert('Registration Successful! Please login.');
+        closeModal('registerModal');
+        openModal('loginModal');
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const id = document.getElementById('logId').value;
+        const pass = document.getElementById('logPass').value;
+        const savedUser = JSON.parse(localStorage.getItem('weWinUser'));
+
+        if (savedUser && savedUser.id === id && savedUser.pass === pass) {
+            alert('Login Successful!');
+            closeModal('loginModal');
+            document.getElementById('auth-buttons').style.display = 'none';
+            document.getElementById('logged-in-ui').style.display = 'flex'; 
+            document.getElementById('display-player-name').innerText = savedUser.name;
+            document.getElementById('menu-logout').style.display = 'flex';
+        } else {
+            alert('Invalid Mobile/Email or Password!');
+        }
+    }
+
+    function logout() {
+        document.getElementById('auth-buttons').style.display = 'flex';
+        document.getElementById('logged-in-ui').style.display = 'none';
+        document.getElementById('menu-logout').style.display = 'none';
+        toggleMenu(); 
+        alert('Logged Out');
+    }
+
+    // --- 4. Wallet & Withdraw Logic ---
+    function processDeposit(method) {
+        let amount = document.getElementById('depAmount').value;
+        if(amount < 100) { alert("Minimum deposit ₹100."); return; }
+        alert(`${method} se ₹${amount} add ho rahe hain...`);
+        currentBalance += parseFloat(amount);
+        updateBalanceUI();
+        closeModal('depositModal');
+        document.getElementById('live-notification').style.display = 'block';
+        document.getElementById('notif-text').innerText = `Deposit Successful! ₹${amount} added to your wallet.`;
+    }
+
+    function updateBalanceUI() {
+        document.getElementById('player-balance').innerText = `₹ ${currentBalance.toFixed(2)}`;
+    }
+
+    function openWithdrawModal() {
+        document.getElementById('w-bal').innerText = `₹ ${currentBalance.toFixed(2)}`;
+        openModal('withdrawModal');
+    }
+
+    function requestWithdrawal() {
+        let amt = parseFloat(document.getElementById('wAmount').value);
+        let upi = document.getElementById('wUpi').value;
+        if(!amt || !upi) { alert("Fill all the details!"); return; }
+        if(amt < 500) { alert("Minimum withdrawal ₹500."); return; }
+        if(amt > currentBalance) { alert("Insufficient Balance! Aapke paas sirf ₹" + currentBalance.toFixed(2) + " hain."); return; }
+        if(!upi.includes('@')) { alert("Sahi UPI ID dalein (e.g. name@upi)."); return; }
+        currentBalance -= amt; 
+        updateBalanceUI(); 
+        alert("Request Sent! ₹" + amt + " Your withdrawal will be completed in next 24 Hours.");
+        closeModal('withdrawModal');
+    }
+
+    // --- 5. Admin Panel Logic ---
+    function checkAdminAccess() {
+        let emailCode = prompt("Enter Admin ID Code:");
+        if (emailCode === null) return;
+        if (emailCode === "noemail") {
+            let passCode = prompt("Enter Admin Password Code:");
+            if (passCode === "nopass") {
+                alert("Admin Identity Verified!");
+                openModal('adminModal'); 
+                if(document.getElementById('sideMenu').classList.contains('open')) toggleMenu(); 
+            } else { alert("Wrong Password Code!"); }
+        } else { alert("Invalid Admin ID Code!"); }
+    }
+
+    function showAdminTab(id) {
+        document.querySelectorAll('.admin-pane').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function updateAdminLiveMatch(e) {
+        e.preventDefault();
+        const tour = document.getElementById('adminTour').value;
+        const t1 = document.getElementById('adminT1').value;
+        const s1 = document.getElementById('adminS1').value;
+        const t2 = document.getElementById('adminT2').value;
+        const s2 = document.getElementById('adminS2').value;
+        document.getElementById('display-tournament').innerHTML = `<i class="fa-solid fa-cricket-bat-ball"></i> ` + tour;
+        document.getElementById('display-team1').innerText = "🏏 " + t1;
+        document.getElementById('display-score1').innerText = s1;
+        document.getElementById('display-team2').innerText = "🏏 " + t2;
+        document.getElementById('display-score2').innerText = s2;
+        alert('Live match updated successfully!');
+        closeModal('adminModal');
+    }
+
+    function triggerLiveNotif() {
+        let text = document.getElementById('newNotif').value;
+        let notifBar = document.getElementById('live-notification');
+        document.getElementById('notif-text').innerText = text;
+        notifBar.style.display = 'block';
+        alert("Live Notification Triggered!");
+    }
+
+    // --- 6. Chat Logic ---
+    function sendUserMsg() {
+        let input = document.getElementById('userMsgInput');
+        let msg = input.value.trim();
+        if(!msg) return;
+        let chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML += `<div style="align-self: flex-end; background: var(--accent-blue); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 80%; font-size: 14px;">${msg}</div>`;
+        let adminList = document.getElementById('admin-chat-list');
+        if(adminList) adminList.innerHTML += `<div style="border-bottom:1px solid #333; padding:5px; font-size:12px;"><b>Player:</b> ${msg}</div>`;
+        input.value = ""; 
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendAdminReply() {
+        let replyInput = document.getElementById('adminReply');
+        let replyText = replyInput.value.trim();
+        if(!replyText) { alert("Khali reply nahi bhej sakte!"); return; }
+        let chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML += `<div style="align-self: flex-start; background: #15304b; color: white; padding: 10px 15px; border-radius: 0 15px 15px 15px; max-width: 80%; font-size: 14px; border: 1px solid #1a3c5e; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><span style="font-size: 10px; color: var(--accent-green); display: block; margin-bottom: 2px;">Support Team</span>${replyText}</div>`;
+        replyInput.value = ""; 
+        chatBox.scrollTop = chatBox.scrollHeight; 
+        alert("Reply Sent!");
+    }
+</script>
+
+</body>
+</html>
