@@ -131,8 +131,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 <!-- HEADER -->
 <header>
   <div class="logo-section" style="display:flex;align-items:center;gap:8px;">
-    <img src="we-win-logo.png" style="height:32px;" onerror="this.style.display='none'">
-    <span class="logo-txt">WE WON</span>
+    <img src="we-win-logo.png" style="height: 80px; width: auto;" onerror="this.style.display='none'">
   </div>
   <div id="logged-in-ui">
     <div class="player-info">
@@ -1025,23 +1024,28 @@ function renderLiveMatch(match, index){
 }
 
 // ════════════════════════════════════════
-// UPCOMING MATCHES
+// UPCOMING MATCHES — UPDATED SCHEDULE
 // ════════════════════════════════════════
-var iplSchedule=[
-  {date:"2026-04-15T19:30:00",t1:"Royal Challengers Bangalore",t2:"Lucknow Super Giants"},
-  {date:"2026-04-16T19:30:00",t1:"Mumbai Indians",t2:"Punjab Kings"},
-  {date:"2026-04-17T19:30:00",t1:"Gujarat Titans",t2:"Kolkata Knight Riders"},
-  {date:"2026-04-18T15:30:00",t1:"Royal Challengers Bangalore",t2:"Delhi Capitals"},
-  {date:"2026-04-18T19:30:00",t1:"Sunrisers Hyderabad",t2:"Chennai Super Kings"},
-  {date:"2026-04-19T15:30:00",t1:"Kolkata Knight Riders",t2:"Rajasthan Royals"},
-  {date:"2026-04-19T19:30:00",t1:"Punjab Kings",t2:"Lucknow Super Giants"},
-  {date:"2026-04-20T19:30:00",t1:"Gujarat Titans",t2:"Mumbai Indians"},
-  {date:"2026-04-21T19:30:00",t1:"Sunrisers Hyderabad",t2:"Delhi Capitals"},
-  {date:"2026-04-22T19:30:00",t1:"Lucknow Super Giants",t2:"Rajasthan Royals"},
-  {date:"2026-04-23T19:30:00",t1:"Mumbai Indians",t2:"Chennai Super Kings"},
-  {date:"2026-04-24T19:30:00",t1:"Royal Challengers Bangalore",t2:"Gujarat Titans"},
-  {date:"2026-04-25T19:30:00",t1:"Delhi Capitals",t2:"Punjab Kings"},
-  {date:"2026-04-26T15:30:00",t1:"Gujarat Titans",t2:"Chennai Super Kings"}
+var iplSchedule = [
+  { date: "2026-05-12T19:30:00", t1: "Gujarat Titans", t2: "Sunrisers Hyderabad" },
+  { date: "2026-05-13T19:30:00", t1: "Royal Challengers Bangalore", t2: "Kolkata Knight Riders" },
+  { date: "2026-05-14T19:30:00", t1: "Punjab Kings", t2: "Mumbai Indians" },
+  { date: "2026-05-15T19:30:00", t1: "Lucknow Super Giants", t2: "Chennai Super Kings" },
+  { date: "2026-05-16T19:30:00", t1: "Kolkata Knight Riders", t2: "Gujarat Titans" },
+  { date: "2026-05-17T15:30:00", t1: "Punjab Kings", t2: "Royal Challengers Bangalore" },
+  { date: "2026-05-17T19:30:00", t1: "Delhi Capitals", t2: "Rajasthan Royals" },
+  { date: "2026-05-18T19:30:00", t1: "Chennai Super Kings", t2: "Sunrisers Hyderabad" },
+  { date: "2026-05-19T19:30:00", t1: "Rajasthan Royals", t2: "Lucknow Super Giants" },
+  { date: "2026-05-20T19:30:00", t1: "Kolkata Knight Riders", t2: "Mumbai Indians" },
+  { date: "2026-05-21T19:30:00", t1: "Gujarat Titans", t2: "Chennai Super Kings" },
+  { date: "2026-05-22T19:30:00", t1: "Sunrisers Hyderabad", t2: "Royal Challengers Bangalore" },
+  { date: "2026-05-23T19:30:00", t1: "Lucknow Super Giants", t2: "Punjab Kings" },
+  { date: "2026-05-24T15:30:00", t1: "Mumbai Indians", t2: "Rajasthan Royals" },
+  { date: "2026-05-24T19:30:00", t1: "Kolkata Knight Riders", t2: "Delhi Capitals" },
+  { date: "2026-05-26T19:30:00", t1: "Qualifier 1", t2: "TBD" },
+  { date: "2026-05-27T19:30:00", t1: "Eliminator", t2: "TBD" },
+  { date: "2026-05-29T19:30:00", t1: "Qualifier 2", t2: "TBD" },
+  { date: "2026-05-31T19:30:00", t1: "Final", t2: "TBD" }
 ];
 
 function updateUpcomingMatches(){
