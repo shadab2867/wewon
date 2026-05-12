@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WE WON - IPL Prediction Game & Sky High Adventure</title>
+<title>WE WON - IPL Prediction Game & Aviator Finance</title>
 <link rel="icon" href="we-win-logo.png" type="image/png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg-main:#0b1c2c; --bg-card:#15304b; --bg-header:#11283d;
-  --text-light:#fff; --text-muted:#a0b2c6;
-  --green:#529626; --blue:#1c75bc; --gold:#ffcc00; --red:#e53935;
+  --bg-main:#04060b; --bg-card:#0d111a; --bg-header:#06090f;
+  --text-light:#f5f7fb; --text-muted:#8a8fa5;
+  --accent-red:#ff0033; --blue:#2a7bff; --gold:#ffb33d; --red:#ff0033;
+  --panel-border:rgba(255,0,51,0.18);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
 body{
@@ -25,8 +26,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 #auth-buttons{display:flex;gap:8px;}
 #logged-in-ui{display:none;align-items:center;gap:10px;}
 .btn-login{padding:6px 12px;background:transparent;border:1px solid var(--text-muted);color:white;border-radius:4px;cursor:pointer;font-size:12px;}
-.btn-reg{padding:6px 12px;background:var(--green);color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;font-size:12px;}
-.btn-dep{background:var(--green);color:white;border:none;padding:6px 12px;border-radius:4px;font-weight:bold;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;}
+.btn-reg{padding:6px 12px;background:var(--accent-red);color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;font-size:12px;}
+.btn-dep{background:var(--accent-red);color:white;border:none;padding:6px 12px;border-radius:4px;font-weight:bold;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;}
 .player-info{text-align:right;}
 .player-info .pname{font-size:12px;color:var(--text-muted);}
 .player-info .pid{font-size:10px;color:var(--gold);}
@@ -54,20 +55,21 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
 /* ── HERO ── */
 .hero-banner{
-  background:linear-gradient(to right,#0a1f33,#15304b);
-  margin:10px;padding:20px;border-radius:10px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.4);
+  background:linear-gradient(135deg, rgba(255,0,51,0.18), rgba(10,10,15,0.95));
+  margin:10px;padding:20px;border-radius:16px;
+  box-shadow:0 8px 30px rgba(255,0,51,0.12);
+  border:1px solid rgba(255,0,51,0.14);
   position:relative;z-index:1;
 }
 .hero-banner h2{
-  font-size:20px;margin-bottom:8px;font-weight:bold;
-  color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5);
+  font-size:22px;margin-bottom:10px;font-weight:900;
+  color:#f8f9fb;text-shadow:0 2px 12px rgba(255,0,51,0.24);
 }
 .hero-banner p{
-  font-size:13px;color:var(--text-muted);margin-bottom:12px;
+  font-size:13px;color:var(--text-muted);margin-bottom:14px;
 }
 .hero-banner button{
-  background:var(--green);color:white;border:none;
+  background:var(--accent-red);color:white;border:none;
   padding:10px 18px;border-radius:6px;margin-top:12px;
   cursor:pointer;font-weight:bold;font-size:13px;
   transition:all 0.3s ease;
@@ -86,16 +88,17 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .upcoming-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:10px 15px;}
 @media(min-width:768px){.upcoming-grid{grid-template-columns:1fr 1fr;}}
 .bottom-nav{
-  position:fixed;bottom:0;width:100%;
-  background:linear-gradient(to top,var(--bg-header),rgba(17,40,61,0.95));
-  display:flex !important;justify-content:space-around;align-items:flex-end;
-  padding:8px 0 12px;border-top:2px solid #1a3c5e;
-  z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.3);
+  position:fixed !important;left:0 !important;bottom:0 !important;width:100% !important;
+  background:linear-gradient(to top, rgba(4,6,11,0.98), rgba(10,10,15,0.95));
+  display:flex !important;justify-content:space-around;align-items:center;
+  padding:10px 0 14px;border-top:2px solid rgba(255,0,51,0.25) !important;
+  z-index:9999 !important;box-shadow:0 -4px 24px rgba(0,0,0,0.45) !important;
 }
 #nav-aviator {
-  position: relative;
-  z-index: 9999;
+  position: relative !important;
+  z-index: 9999 !important;
 }
+body{padding-bottom:120px;}
 .nav-item{
   display:flex;flex-direction:column;align-items:center;
   color:var(--text-muted);font-size:10px;cursor:pointer;gap:3px;
@@ -1051,7 +1054,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 <!-- HOME SECTION -->
 <div id="home-section" class="page-section active">
     <!-- HERO BANNER -->
-    <div class="hero-banner interactive-aviator-banner" onclick="switchToSkyHigh()" style="margin-top:5px;">
+    <div class="hero-banner interactive-aviator-banner" onclick="switchToAviator()" style="margin-top:5px;">
         <div class="hero-text-content">
             <h2>🏆 WE WON — Live Prediction</h2>
             <p class="bonus-tagpulse">🚀 SUPER OFFER: 100% BONUS ON FIRST DEPOSIT!</p>
@@ -1079,10 +1082,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
 
 <div id="skyhigh-section" class="page-section skyhigh-game" style="display:none;">
-  <!-- Sky High Modals -->
+  <!-- Aviator Modals -->
   <div id="skyhigh-loginOverlay" class="skyhigh-overlay">
     <div class="skyhigh-modal-card">
-      <h2>Sky High Player Setup</h2>
+      <h2>Aviator Player Setup</h2>
       <div class="skyhigh-input-group">
         <label>PLAYER NAME</label>
         <input type="text" id="skyhigh-regName" class="skyhigh-form-input" placeholder="e.g. Rahul Gamer" required>
@@ -1124,10 +1127,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
     </div>
   </div>
 
-  <!-- Sky High Header -->
+  <!-- Aviator Header -->
   <div class="skyhigh-header">
     <div class="skyhigh-logo-area">
-      <div class="skyhigh-logo">SKY HIGH</div>
+      <div class="skyhigh-logo">AVIATOR</div>
       <div class="skyhigh-player-name-tag" id="skyhigh-displayPlayerName">Guest</div>
     </div>
     <div class="skyhigh-wallet-container">
@@ -1223,7 +1226,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
       <div class="skyhigh-input-row">
         <div class="skyhigh-counter-box">
           <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(2, -10)">−</div>
-          <span id="skyhigh-ptsVal2">20</span>
+         <input type="number" id="skyhigh-ptsVal2" value="20" min="10" style="background:transparent; color:white; border:none; text-align:center; font-weight:bold; font-size:16px; width:60px;">
           <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(2, 10)">+</div>
         </div>
         <div style="font-size: 11px; color: var(--text-gray); font-weight: bold;">POINTS</div>
@@ -1250,14 +1253,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
         <span>Home</span>
     </div>
 
-    <!-- SKY HIGH -->
-    <div class="nav-item" id="nav-skyhigh" onclick="switchTab('skyhigh-section', 'nav-skyhigh')">
-        <i class="fas fa-plane-departure"></i>
-        <span>Sky High</span>
-    </div>
-
     <!-- AVIATOR -->
-    <div class="nav-item" id="nav-aviator" style="position:relative; z-index:9999;" onclick="switchTab('skyhigh-section', 'nav-aviator')">
+    <div class="nav-item active" id="nav-aviator" style="position:relative; z-index:9999;" onclick="switchTab('skyhigh-section', 'nav-aviator')">
         <i class="fas fa-solid fa-rocket"></i>
         <span>Aviator</span>
     </div>
@@ -1713,6 +1710,10 @@ function switchTab(sectionId, navId) {
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
     const activeNav = document.getElementById(navId);
     if (activeNav) activeNav.classList.add('active');
+
+    if (sectionId === 'history-section') {
+        loadAviatorHistory().catch(err => console.error('History load failed:', err));
+    }
 }
 function toggleMenu(){ document.getElementById('sideMenu').classList.toggle('open'); }
 function showAdminTab(id){
@@ -1898,10 +1899,10 @@ const passField = document.getElementById('logPass'); // Password box
         console.error("Login Error:", err);
     }
 }
-// Function to switch to Sky High Tab automatically
-function switchToSkyHigh() {
-    console.log("Redirecting to Sky High...");
-    switchTab('skyhigh-section', 'nav-skyhigh'); // Hamara generic tab switching function call karein
+// Function to switch to Aviator Tab automatically
+function switchToAviator() {
+    console.log("Redirecting to Aviator...");
+    switchTab('skyhigh-section', 'nav-aviator'); // Hamara generic tab switching function call karein
 }
 function showLoggedInUI(){
   document.getElementById('auth-buttons').style.display='none';
@@ -2246,7 +2247,7 @@ async function updateLiveCricketData() {
             }
             container.innerHTML = `
                 <div style="text-align:center;padding:20px;">
-                    <p style="color:orange;font-weight:bold;">⚠️ Live data load nahi hua</p>
+                    <p style="color:orange;font-weight:bold;">⚠️ Play Aviator Until Match Starts</p>
                     ${nextMatchHtml}
                     <button onclick="openModal('adminModal')" style="margin-top:15px;padding:10px 15px;background:red;color:white;border:none;border-radius:5px;cursor:pointer;">
                         Set Match Manually (Admin)
@@ -3146,7 +3147,7 @@ function calculateResult(over){
 }
 
 // ════════════════════════════════════════
-// SKY HIGH ADVENTURE GAME
+// AVIATOR ADVENTURE GAME
 // ════════════════════════════════════════
 let skyhighGameState = {
   playerName: '',
@@ -3207,7 +3208,7 @@ function skyhighSavePlayerAndStart(){
   skyhighCloseModal('skyhigh-loginOverlay');
   skyhighUpdateUI();
   skyhighLoadHistory();
-  showFancyAlert('Welcome to Sky High, '+name+'!\nStarting bonus: 100 points!');
+  showFancyAlert('Welcome to Aviator, '+name+'!\nStarting bonus: 100 points!');
 }
 
 function skyhighUpdateUI(){
@@ -3235,7 +3236,7 @@ async function skyhighProcessDeposit(){
     return;
   }
 
-  // Convert WE WON coins to Sky High points (1 coin = 1 point)
+  // Convert WE WON coins to Aviator points (1 coin = 1 point)
   if(!playerData || playerData.coins < amount){
     showFancyAlert('Insufficient WE WON coins!');
     return;
@@ -3252,11 +3253,11 @@ async function skyhighProcessDeposit(){
     player_id: playerData.player_id,
     type: 'transfer',
     coins: -amount,
-    description: 'Transferred '+amount+' coins to Sky High',
+    description: 'Transferred '+amount+' coins to Aviator',
     created_at: new Date().toISOString()
   });
 
-  // Add to Sky High
+  // Add to Aviator
   skyhighGameState.wallet += amount;
   localStorage.setItem('skyhigh_wallet', skyhighGameState.wallet);
   playerData.coins -= amount;
@@ -3264,7 +3265,7 @@ async function skyhighProcessDeposit(){
 
   skyhighCloseModal('skyhigh-depositOverlay');
   skyhighUpdateUI();
-  showFancyAlert(amount + ' points added to Sky High wallet!');
+  showFancyAlert(amount + ' points added to Aviator wallet!');
 }
 
 async function skyhighProcessWithdraw(){
@@ -3275,7 +3276,7 @@ async function skyhighProcessWithdraw(){
   }
 
   if(amount > skyhighGameState.wallet){
-    showFancyAlert('Insufficient Sky High points!');
+    showFancyAlert('Insufficient Aviator points!');
     return;
   }
 
@@ -3290,11 +3291,11 @@ async function skyhighProcessWithdraw(){
     player_id: playerData.player_id,
     type: 'transfer',
     coins: amount,
-    description: 'Transferred '+amount+' points from Sky High',
+    description: 'Transferred '+amount+' points from Aviator',
     created_at: new Date().toISOString()
   });
 
-  // Deduct from Sky High
+  // Deduct from Aviator
   skyhighGameState.wallet -= amount;
   localStorage.setItem('skyhigh_wallet', skyhighGameState.wallet);
   playerData.coins += amount;
@@ -3411,13 +3412,7 @@ function skyhighPlaceBet(panel, amount, isAuto, autoTarget){
 
     // 5. Takeoff Logic
     if(!skyhighGameState.gameRunning && skyhighGameState.activeBets.length === 1){
-        showFancyAlert("Takeoff in 3 seconds! ✈️");
-        
-        // Timer for takeoff
-        setTimeout(() => {
-            console.log("Plane Engine Ignite!");
-            skyhighStartGame(); 
-        }, 3000);
+        skyhighShowCountdown(3);
     }
 }
 function skyhighStartNextRound() {
@@ -3435,13 +3430,29 @@ function skyhighStartNextRound() {
     // Kuch seconds wait karke plane udayein (sirf agar koi bet lagi ho)
     setTimeout(() => {
         if (skyhighGameState.activeBets.length > 0) {
-            skyhighStartGame();
+            skyhighShowCountdown(3);
         } else {
             console.log("No bets placed, waiting...");
             // Dubara check karein thodi der baad
             skyhighStartNextRound(); 
         }
     }, 2000); 
+}
+
+function skyhighShowCountdown(seconds) {
+    const display = document.getElementById('skyhigh-multiplier');
+    let counter = seconds;
+    if(display) {
+        display.innerText = 'Next Round in ' + counter + '...';
+    }
+    const countdown = setInterval(() => {
+        counter -= 1;
+        if (display) display.innerText = counter > 0 ? 'Next Round in ' + counter + '...' : 'Takeoff!';
+        if (counter <= 0) {
+            clearInterval(countdown);
+            skyhighStartGame();
+        }
+    }, 1000);
 }
 
 function skyhighCashOut(panel, originalAmount){
@@ -3513,6 +3524,7 @@ function skyhighStartGame() {
         skyhighGameState.planeX += 2;
 
         // Auto Cashout & Crash Check
+        skyhighProcessAutoCashouts();
         if (skyhighGameState.currentMultiplier >= parseFloat(skyhighGameState.crashAt)) {
             skyhighStopGame();
             return;
@@ -3552,6 +3564,29 @@ function skyhighStopGame(){
     skyhighAddToHistory(parseFloat(skyhighGameState.crashAt), 0);
 }
 
+function skyhighProcessAutoCashouts(){
+    if(!skyhighGameState.activeBets || skyhighGameState.activeBets.length === 0) return;
+    const toCashOut = skyhighGameState.activeBets.filter(bet => bet.isAuto && bet.autoTarget && skyhighGameState.currentMultiplier >= bet.autoTarget);
+    if(toCashOut.length === 0) return;
+
+    toCashOut.forEach(bet => {
+        const winnings = Math.floor(bet.amount * skyhighGameState.currentMultiplier);
+        playerData.coins += (winnings - bet.amount);
+        skyhighGameState.wallet = playerData.coins;
+
+        const btn = document.getElementById('skyhigh-btn' + bet.panel);
+        if(btn){
+            btn.innerHTML = 'CASHED OUT <span class="skyhigh-btn-sub-text">' + winnings.toFixed(2) + ' pts</span>';
+            btn.classList.remove('skyhigh-btn-orange');
+            btn.classList.add('skyhigh-btn-green');
+        }
+
+        skyhighAddToHistory(skyhighGameState.currentMultiplier, winnings - bet.amount);
+    });
+
+    skyhighGameState.activeBets = skyhighGameState.activeBets.filter(bet => !(bet.isAuto && bet.autoTarget && skyhighGameState.currentMultiplier >= bet.autoTarget));
+    skyhighUpdateUI();
+}
 
 function skyhighGenerateCrashMultiplier(){
   // Simple crash multiplier generation (1.01 to 50.00)
@@ -3626,17 +3661,85 @@ function recordBetHistory(amount, multiplier) {
         historyList.appendChild(listItem);
     });
 }
-function skyhighOpenHistory(){
-  var grid = document.getElementById('skyhigh-historyGrid');
-  grid.innerHTML = '';
-  skyhighGameState.gameHistory.forEach(entry => {
-    var item = document.createElement('div');
-    item.className = 'skyhigh-grid-item';
-    item.textContent = entry.multiplier.toFixed(2) + 'x';
-    item.style.color = entry.profit > 0 ? '#28a745' : '#ff4d4d';
-    grid.appendChild(item);
-  });
+async function skyhighOpenHistory(){
+  await loadAviatorHistory();
   skyhighOpenModal('skyhigh-historyModal');
+}
+
+async function loadAviatorHistory(){
+  const pageGrid = document.getElementById('ended-matches-list');
+  const modalGrid = document.getElementById('skyhigh-historyGrid');
+  const renderRound = (round) => {
+    const label = document.createElement('div');
+    label.className = 'skyhigh-grid-item';
+    label.style.display = 'flex';
+    label.style.justifyContent = 'space-between';
+    label.style.padding = '10px 12px';
+    label.style.marginBottom = '8px';
+    label.style.border = '1px solid rgba(255,0,51,0.2)';
+    label.style.borderRadius = '12px';
+    label.style.background = 'rgba(255,0,51,0.05)';
+    const left = document.createElement('div');
+    const crashValue = Number(round.crash_point ?? round.multiplier ?? 0).toFixed(2);
+    left.innerText = 'Crash: ' + crashValue + 'x';
+    const right = document.createElement('div');
+    right.style.color = round.status === 'crashed' ? '#ff0033' : '#6bf';
+    right.innerText = round.status ? round.status.toUpperCase() : 'N/A';
+    label.appendChild(left);
+    label.appendChild(right);
+    return label;
+  };
+
+  if(pageGrid) pageGrid.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">Loading Aviator rounds...</p>';
+  if(modalGrid) modalGrid.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">Loading Aviator rounds...</p>';
+
+  try {
+    const { data, error } = await sb.from('game_rounds')
+      .select('id, status, crash_point, created_at')
+      .order('id', { ascending: false })
+      .limit(10);
+    if (error) throw error;
+    const rounds = Array.isArray(data) ? data : [];
+    if (rounds.length === 0) {
+      const empty = '<p style="color:var(--text-muted);padding:20px;text-align:center;">No Aviator rounds found.</p>';
+      if(pageGrid) pageGrid.innerHTML = empty;
+      if(modalGrid) modalGrid.innerHTML = empty;
+      return;
+    }
+
+    if(pageGrid) {
+      pageGrid.innerHTML = '';
+      rounds.forEach(r => pageGrid.appendChild(renderRound(r)));
+    }
+    if(modalGrid) {
+      modalGrid.innerHTML = '';
+      rounds.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'skyhigh-grid-item';
+        item.textContent = (r.crash_point || 0).toFixed(2) + 'x • ' + (new Date(r.created_at).toLocaleTimeString('en-IN')); 
+        item.style.color = r.status === 'crashed' ? '#ff0033' : '#6bf';
+        item.style.marginBottom = '6px';
+        item.style.padding = '8px 10px';
+        item.style.borderRadius = '10px';
+        item.style.background = 'rgba(255,0,51,0.08)';
+        modalGrid.appendChild(item);
+      });
+    }
+  } catch(err) {
+    console.error('Failed to load Aviator history:', err);
+    const fallback = skyhighGameState.gameHistory.slice(0, 10);
+    const empty = '<p style="color:var(--text-muted);padding:20px;text-align:center;">Unable to load history. Showing local cache.</p>';
+    if(pageGrid) pageGrid.innerHTML = empty;
+    if(modalGrid) modalGrid.innerHTML = empty;
+    fallback.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'skyhigh-grid-item';
+      item.textContent = entry.multiplier.toFixed(2) + 'x • ' + entry.time;
+      item.style.color = entry.profit > 0 ? '#28a745' : '#ff0033';
+      if(pageGrid) pageGrid.appendChild(item);
+      if(modalGrid) modalGrid.appendChild(item.cloneNode(true));
+    });
+  }
 }
 
 

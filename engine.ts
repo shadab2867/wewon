@@ -1,6 +1,7 @@
 export {};
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import * as crypto from 'crypto';
+declare var require: any;
+const crypto = require('crypto');
 
 // Interfaces for Type Safety
 interface CrashResult {
@@ -49,6 +50,57 @@ function generateProvablyFairCrash(promoOverride: number | null): CrashResult {
     return { serverSeed, clientSeed, hash, point };
 }
 
+async function broadcastGameEvent(event: string, payload: any): Promise<any> {
+    return supabase.channel('game_state').send({
+        type: 'broadcast',
+        event,
+        payload
+    });
+}
+
+async function broadcastCountdown(seconds: number): Promise<void> {
+    await broadcastGameEvent('countdown', {
+        status: 'waiting',
+        seconds,
+        message: `Next round in ${seconds}...`
+    });
+}
+
+async function processAutoCashouts(roundId: number, multiplier: number): Promise<number> {
+    try {
+        const { data, error } = await supabase.from('bets')
+            .select('id, amount, auto_cashout, player_id')
+            .eq('round_id', roundId)
+            .eq('status', 'pending')
+            .lte('auto_cashout', multiplier);
+
+        if (error) {
+            console.warn('Auto cashout query failed:', error);
+            return 0;
+        }
+
+        const autoBets = Array.isArray(data) ? data : [];
+        if (autoBets.length === 0) return 0;
+
+        const ids = autoBets.map((bet: any) => bet.id);
+        await supabase.from('bets')
+            .update({ status: 'cashed_out', cashed_out_at: new Date().toISOString() })
+            .in('id', ids)
+            .eq('status', 'pending');
+
+        await broadcastGameEvent('autoCashout', {
+            roundId,
+            multiplier: multiplier.toFixed(2),
+            count: ids.length
+        });
+
+        return ids.length;
+    } catch (err) {
+        console.error('Auto cashout processing failed:', err);
+        return 0;
+    }
+}
+
 async function startGameLoop(): Promise<void> {
     while (true) {
         // 1. Setup Round
@@ -64,13 +116,14 @@ async function startGameLoop(): Promise<void> {
         const round = data as GameRound;
         currentRoundId = round ? round.id : null;
 
-        // Broadcast waiting
-        supabase.channel('game_state').send({
-            type: 'broadcast',
-            event: 'tick',
-            payload: { status: gameStatus, timeToStart: 5000, hash }
-        });
-        await new Promise(res => setTimeout(res, 5000));
+        await broadcastGameEvent('tick', { status: gameStatus, hash, crashPoint: crashPoint.toFixed(2) });
+
+        for (let seconds = 3; seconds > 0; seconds--) {
+            await broadcastCountdown(seconds);
+            await new Promise(res => setTimeout(res, 1000));
+        }
+
+        await broadcastGameEvent('tick', { status: 'starting', multiplier: '1.00', message: 'Aviator takeoff' });
 
         // 2. Start Flight
         if (currentRoundId) {
@@ -91,10 +144,10 @@ async function startGameLoop(): Promise<void> {
                     break;
                 }
 
-                supabase.channel('game_state').send({
-                    type: 'broadcast',
-                    event: 'tick',
-                    payload: { status: gameStatus, multiplier: currentMultiplier.toFixed(2) }
+                await processAutoCashouts(currentRoundId, currentMultiplier);
+                await broadcastGameEvent('tick', {
+                    status: gameStatus,
+                    multiplier: currentMultiplier.toFixed(2)
                 });
                 await new Promise(res => setTimeout(res, 100));
             }
@@ -109,10 +162,11 @@ async function startGameLoop(): Promise<void> {
             await resolveBets(currentRoundId, crashPoint);
         }
 
-        supabase.channel('game_state').send({
-            type: 'broadcast',
-            event: 'tick',
-            payload: { status: gameStatus, multiplier: crashPoint.toFixed(2), finalSeed: serverSeed }
+        await broadcastGameEvent('tick', {
+            status: gameStatus,
+            multiplier: crashPoint.toFixed(2),
+            finalSeed: serverSeed,
+            message: 'Flew Away'
         });
 
         await new Promise(res => setTimeout(res, 4000)); 
