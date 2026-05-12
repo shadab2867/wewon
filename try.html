@@ -1,0 +1,3664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WE WON - IPL Prediction Game & Sky High Adventure</title>
+<link rel="icon" href="we-win-logo.png" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg-main:#0b1c2c; --bg-card:#15304b; --bg-header:#11283d;
+  --text-light:#fff; --text-muted:#a0b2c6;
+  --green:#529626; --blue:#1c75bc; --gold:#ffcc00; --red:#e53935;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+body{
+  background:var(--bg-main);color:var(--text-light);min-height:100vh;
+  overflow-x:hidden;padding-bottom:10px;
+}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;background:var(--bg-header);position:sticky;top:0;z-index:100;border-bottom:1px solid #1a3c5e;}
+.logo-txt{font-style:italic;font-size:20px;font-weight:900;color:white;}
+#auth-buttons{display:flex;gap:8px;}
+#logged-in-ui{display:none;align-items:center;gap:10px;}
+.btn-login{padding:6px 12px;background:transparent;border:1px solid var(--text-muted);color:white;border-radius:4px;cursor:pointer;font-size:12px;}
+.btn-reg{padding:6px 12px;background:var(--green);color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;font-size:12px;}
+.btn-dep{background:var(--green);color:white;border:none;padding:6px 12px;border-radius:4px;font-weight:bold;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;}
+.player-info{text-align:right;}
+.player-info .pname{font-size:12px;color:var(--text-muted);}
+.player-info .pid{font-size:10px;color:var(--gold);}
+.player-info .pbal{font-size:14px;color:var(--gold);font-weight:bold;}
+
+/* ── NOTIF BAR ── */
+#live-notification{display:none;background:#ff9800;color:white;padding:10px 15px;font-weight:bold;text-align:center;position:fixed;top:0;width:100%;z-index:3000;}
+
+/* ── FANCY ALERT ── */
+#fancy-alert{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#15304b;border:2px solid var(--green);padding:25px;border-radius:15px;z-index:9999;text-align:center;color:white;min-width:300px;max-width:92%;box-shadow:0 10px 30px rgba(0,0,0,0.8);}
+#fancy-alert h3{margin-bottom:12px;color:var(--green);}
+#fancy-alert p{margin-bottom:18px;font-size:1rem;font-weight:bold;line-height:1.5;}
+#fancy-alert button{background:var(--green);color:white;border:none;padding:10px 30px;border-radius:25px;cursor:pointer;font-weight:bold;}
+
+/* ── SECTIONS ── */
+.page-section{
+  display:none;
+  padding-bottom:140px;
+  min-height:100vh;
+}
+.page-section.active{
+  display:block !important;
+}
+.section-title{padding:15px 15px 5px;font-size:13px;font-weight:bold;text-transform:uppercase;color:var(--text-muted);}
+
+/* ── HERO ── */
+.hero-banner{
+  background:linear-gradient(to right,#0a1f33,#15304b);
+  margin:10px;padding:20px;border-radius:10px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.4);
+  position:relative;z-index:1;
+}
+.hero-banner h2{
+  font-size:20px;margin-bottom:8px;font-weight:bold;
+  color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5);
+}
+.hero-banner p{
+  font-size:13px;color:var(--text-muted);margin-bottom:12px;
+}
+.hero-banner button{
+  background:var(--green);color:white;border:none;
+  padding:10px 18px;border-radius:6px;margin-top:12px;
+  cursor:pointer;font-weight:bold;font-size:13px;
+  transition:all 0.3s ease;
+  box-shadow:0 4px 12px rgba(82,150,38,0.3);
+}
+.hero-banner button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(82,150,38,0.5);
+}
+
+/* ── LIVE CARD ── */
+.live-card{background:var(--bg-card);margin:8px 15px;border-radius:10px;padding:15px;}
+.live-header{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+
+/* ── UPCOMING GRID ── */
+.upcoming-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:10px 15px;}
+@media(min-width:768px){.upcoming-grid{grid-template-columns:1fr 1fr;}}
+.bottom-nav{
+  position:fixed;bottom:0;width:100%;
+  background:linear-gradient(to top,var(--bg-header),rgba(17,40,61,0.95));
+  display:flex;justify-content:space-around;align-items:flex-end;
+  padding:8px 0 12px;border-top:2px solid #1a3c5e;
+  z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.3);
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  color:var(--text-muted);font-size:10px;cursor:pointer;gap:3px;
+  padding:5px 10px;transition:all 0.2s ease;
+  border-radius:8px;min-width:50px;
+}
+.nav-item:hover{
+  color:white;background:rgba(82,150,38,0.2);
+}
+.nav-item.active{
+  color:var(--green);background:rgba(82,150,38,0.1);
+  font-weight:bold;border-bottom:2px solid var(--green);
+}
+.nav-item i{
+  font-size:20px;transition:all 0.2s ease;
+}
+.nav-item.active i{
+  font-size:22px;color:var(--green);
+}
+.nav-item.bet-slip{
+  position:relative;bottom:0;
+  background:var(--blue);width:45px;height:45px;border-radius:50%;
+  display:flex;justify-content:center;align-items:center;
+  color:white;border:3px solid var(--bg-main);
+  box-shadow:0 4px 12px rgba(28,117,188,0.4);
+  transition:all 0.3s ease;
+}
+.nav-item.bet-slip:hover{
+  transform:scale(1.1);box-shadow:0 6px 16px rgba(28,117,188,0.6);
+  background:rgba(28,117,188,0.9);
+}
+
+/* ── SIDE MENU ── */
+.side-menu{position:fixed;top:0;right:-300px;width:280px;height:100%;background:var(--bg-header);z-index:500;transition:0.3s;padding:20px;box-shadow:-5px 0 15px rgba(0,0,0,0.5);overflow-y:auto;}
+.side-menu.open{right:0;}
+.menu-item{padding:14px 0;border-bottom:1px solid #1a3c5e;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.menu-item i{color:var(--text-muted);width:20px;}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:200;justify-content:center;align-items:center;padding:10px;}
+.modal-overlay.open{display:flex;}
+.modal-box {
+    background: rgba(17, 40, 61, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(28, 117, 188, 0.3);
+    border-radius: 20px !important;
+    padding: 25px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.close-btn{position:absolute;top:12px;right:15px;font-size:22px;cursor:pointer;color:var(--text-muted);background:none;border:none;line-height:1;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px;}
+.form-group input,.form-group select{width:100%;padding:10px;border-radius:5px;border:1px solid #1a3c5e;background:var(--bg-main);color:white;font-size:14px;}
+.submit-btn{width:100%;background:var(--blue);color:white;border:none;padding:12px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:14px;}
+
+/* ── ADMIN ── */
+.admin-pane{display:none;}
+.admin-pane.active{display:block;}
+
+/* ── CHAT ── */
+#chat-messages{flex:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:#0b1c2c;min-height:200px;max-height:350px;}
+
+/* ── HISTORY CARDS ── */
+.history-grid{display:grid;grid-template-columns:1fr;gap:10px;padding:0 15px;}
+@media(min-width:768px){.history-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── PREDICTION HISTORY ── */
+.pred-item{background:#0b1c2c;padding:10px 12px;margin-bottom:8px;border-radius:8px;border:1px solid #1a3c5e;display:flex;justify-content:space-between;align-items:center;}
+
+/* ── JACKPOT PANEL FIX ── */
+.jackpot-panel{background:#05101a;border:2px solid #00e676;border-radius:0 0 0 12px;}
+.jackpot-header{background:linear-gradient(90deg,#00c853,#00e676);color:#000;text-align:center;padding:12px;font-weight:900;font-size:1rem;letter-spacing:1px;}
+.predict-panel{background:#1a1a2e;border-radius:0 0 12px 0;}
+.predict-header{background:#2d2d44;color:#fff;text-align:center;padding:12px;font-weight:bold;}
+
+/* ── COIN DISPLAY ── */
+.coin-badge{display:inline-flex;align-items:center;gap:4px;background:#1a3c5e;padding:3px 8px;border-radius:12px;font-size:12px;color:var(--gold);}
+.coin-badge i{font-size:10px;}
+
+/* ── LOADING SPINNER ── */
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg-main);}
+::-webkit-scrollbar-thumb{background:#1a3c5e;border-radius:2px;}
+
+/* ── SKY HIGH ADVENTURE GAME STYLES ── */
+.skyhigh-vars {
+  --bg-black: #000000;
+  --panel-bg: #1c1d1e;
+  --aviator-red: #d11e36;
+  --green-win: #28a745;
+  --orange-out: #f39c12;
+  --blue-wait: #3498db;
+  --text-gray: #9ea0a3;
+}
+
+/* Sky High Game Container */
+.skyhigh-game {
+  display: none;
+  padding-bottom: 90px;
+  background: var(--bg-black);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Sky High Modals */
+.skyhigh-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 2000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.skyhigh-modal-card {
+  background: var(--panel-bg);
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid #444;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  text-align: center;
+  position: relative;
+}
+
+.skyhigh-modal-card h2 {
+  color: white;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.skyhigh-close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  color: var(--text-gray);
+  cursor: pointer;
+}
+
+.skyhigh-input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.skyhigh-input-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-gray);
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.skyhigh-form-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #000;
+  color: white;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.skyhigh-form-input:focus {
+  border-color: var(--green-win);
+}
+
+.skyhigh-action-btn-full {
+  background: var(--green-win);
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+
+.skyhigh-btn-red-full {
+  background: var(--aviator-red);
+}
+
+/* Quick Amount Buttons */
+.skyhigh-quick-amounts {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: space-between;
+}
+
+.skyhigh-quick-btn {
+  background: #000;
+  border: 1px solid #444;
+  color: white;
+  padding: 8px 0;
+  flex: 1;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.skyhigh-quick-btn:hover {
+  background: #333;
+}
+
+/* Sky High Header */
+.skyhigh-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  background: #111;
+}
+
+.skyhigh-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skyhigh-logo {
+  color: var(--aviator-red);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.skyhigh-player-name-tag {
+  font-size: 11px;
+  color: #aaa;
+  background: #222;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.skyhigh-wallet-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.skyhigh-wallet-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.skyhigh-wallet {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 14px;
+  background: #1a1a1a;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #333;
+}
+
+.skyhigh-history-btn {
+  background: #333;
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.skyhigh-transact-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.skyhigh-t-btn {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  color: white;
+  text-transform: uppercase;
+}
+
+.skyhigh-dep-btn {
+  background: var(--green-win);
+}
+
+.skyhigh-with-btn {
+  background: var(--orange-out);
+}
+
+/* History Bar */
+.skyhigh-history-bar {
+  width: 100%;
+  padding: 8px 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  background: #0a0a0a;
+  border-bottom: 1px solid #222;
+  box-sizing: border-box;
+}
+
+.skyhigh-history-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.skyhigh-hist-item {
+  font-size: 12px;
+  padding: 3px 12px;
+  border-radius: 12px;
+  background: #1c1d1e;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+
+.form-group input {
+    background: rgba(11, 28, 44, 0.6) !important;
+    border: 1.5px solid #1a3c5e !important;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: var(--blue) !important;
+    box-shadow: 0 0 10px rgba(28, 117, 188, 0.5);
+    transform: translateY(-2px); /* Anti-gravity feel */
+}
+
+/* --- Glowing Register Button --- */
+#reg-btn {
+    background: linear-gradient(135deg, #1c75bc, #28a745) !important;
+    border: none;
+    height: 50px;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#reg-btn:hover {
+    transform: scale(1.02) translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+}
+
+#reg-btn:active {
+    transform: scale(0.98);
+}
+/* Game Area */
+.skyhigh-game-area {
+  position: relative;
+  width: 95%;
+  max-width: 600px;
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+  margin: 10px 0;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.skyhigh-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.skyhigh-multiplier-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 50px;
+  font-weight: 900;
+  z-index: 10;
+}
+
+.skyhigh-loader-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--aviator-red);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* Controls */
+.skyhigh-controls {
+  width: 95%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+  padding-bottom: 10px;
+  overflow-y: auto;
+}
+
+.skyhigh-panel {
+  background: var(--panel-bg);
+  border-radius: 15px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #2c2d2e;
+}
+
+/* Tabs */
+.skyhigh-tabs {
+  display: flex;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.skyhigh-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.skyhigh-tab.active {
+  background: #333;
+  color: white;
+}
+
+.skyhigh-input-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skyhigh-counter-box {
+  display: flex;
+  align-items: center;
+  background: #000;
+  border-radius: 8px;
+  padding: 5px;
+  border: 1px solid #444;
+  width: 130px;
+  justify-content: space-between;
+}
+
+.skyhigh-counter-box span {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+}
+
+.skyhigh-counter-box input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  width: 50px;
+  text-align: center;
+  outline: none;
+}
+
+.skyhigh-counter-btn {
+  color: var(--text-gray);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.skyhigh-auto-cash-row {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.skyhigh-main-btn {
+  height: 55px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.skyhigh-btn-green {
+  background: var(--green-win);
+}
+
+.skyhigh-btn-orange {
+  background: var(--orange-out);
+}
+
+.skyhigh-btn-blue {
+  background: var(--blue-wait);
+}
+
+.skyhigh-btn-red {
+  background: var(--aviator-red);
+}
+
+.skyhigh-btn-disabled {
+  background: #333 !important;
+  color: #777 !important;
+  cursor: not-allowed;
+}
+
+.skyhigh-btn-sub-text {
+  display: block;
+  font-size: 11px;
+  font-weight: normal;
+  margin-top: 2px;
+}
+
+/* History Modal */
+.skyhigh-history-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.skyhigh-modal-content {
+  background: #1c1d1e;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80%;
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid #444;
+  overflow-y: auto;
+}
+
+.skyhigh-modal-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.skyhigh-history-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.skyhigh-grid-item {
+  background: #000;
+  padding: 8px 0;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #333;
+}
+
+/* Quick Buttons Row */
+.skyhigh-quick-btn-row {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.skyhigh-q-btn {
+  background: #222;
+  color: white;
+  border: 1px solid #444;
+  flex: 1;
+  padding: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+}
+.skyhigh-wallet-container { 
+    display: none !important; 
+}
+.skyhigh-q-btn:hover {
+  background: #444;
+}
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+/* --- Interactive Aviator Banner Style --- */
+.interactive-aviator-banner {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(23, 56, 88, 0.95), rgba(10, 24, 40, 0.95)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.4s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px !important;
+    min-height: 180px;
+}
+
+.interactive-aviator-banner:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(28, 117, 188, 0.3);
+}
+
+.hero-text-content {
+    z-index: 2;
+    max-width: 60%;
+}
+
+.bonus-tagpulse {
+    color: #ffcc00; 
+    font-weight: bold; 
+    font-size: 14px; 
+    margin-top: 8px; 
+    animation: bannerPulse 1.5s infinite;
+}
+
+.banner-aviator-visual {
+    position: absolute;
+    right: 20px;
+    bottom: -10px;
+    width: 150px;
+    height: 150px;
+    opacity: 0.3;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.aviator-svg-icon {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.7)); /* Red glow for aviator */
+}
+
+.banner-graph-line {
+    position: absolute;
+    bottom: 20px;
+    right: 0;
+    width: 100px;
+    height: 2px;
+    background: #1c75bc;
+    box-shadow: 0 0 10px #1c75bc;
+    transform: rotate(-15deg);
+}
+
+@keyframes bannerPulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); }
+}
+/* Sky High Canvas Visibility Fix */
+.skyhigh-graph-area {
+    position: relative;
+    width: 100%;
+    height: 300px; /* Game area ki height */
+    background: #0b1c2c;
+    border-radius: 12px;
+    border: 1px solid #1a3c5e;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#skyhigh-gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.skyhigh-multiplier-text {
+    position: relative;
+    z-index: 2; /* Text hamesha plane ke upar rahega */
+    font-size: 48px;
+    font-weight: bold;
+    color: white;
+}
+/* --- Premium Jackpot Styling --- */
+.jackpot-container {
+    background: #081420; /* Deep dark blue */
+    border: 2px solid #00ff88; /* Neon Green Border */
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 15px;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+.jackpot-header {
+    background: #00ff88;
+    color: #000;
+    text-align: center;
+    font-weight: 900;
+    font-size: 18px;
+    padding: 12px;
+    letter-spacing: 1px;
+}
+
+.jackpot-body {
+    padding: 20px;
+}
+
+.jackpot-subtitle {
+    color: #00ff88;
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.jackpot-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.jackpot-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.jackpot-item label {
+    color: #00e5ff; /* Neon cyan */
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+/* Common box styling for inputs and display */
+.neon-box, .neon-input {
+    background: #0a1f33;
+    border: 2px solid #00e5ff;
+    border-radius: 8px;
+    width: 60px;
+    height: 50px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.neon-input:focus {
+    box-shadow: 0 0 15px #00e5ff;
+    background: #11314f;
+}
+
+/* Special highlight for Current Over box */
+.highlight-box {
+    background: #00e5ff;
+    color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px; /* Thoda bada */
+}
+
+/* Bet Button */
+.neon-btn {
+    background: #00ff88;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 0 25px;
+    height: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+}
+
+.neon-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.6);
+}
+.futuristic-aviator-screen {
+    background: #0a0f1a;
+    box-shadow: inset 0 0 50px rgba(0, 255, 204, 0.1);
+    border: 2px solid #00ffcc;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+.multiplier-text {
+    font-size: 60px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px #00ffcc, 0 0 40px #00ffcc; /* Neon Glow */
+}
+.crashed-text {
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff3333;
+}
+.skyhigh-multiplier-text {
+    color: #fff;
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+    font-family: 'Courier New', Courier, monospace; /* Futuristic look */
+}
+
+.mermaid-editor-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-height: 70vh;
+    overflow: hidden;
+}
+.mermaid-editor-container textarea {
+    width: 100%;
+    min-height: 400px;
+    resize: vertical;
+    border-radius: 12px;
+    border: 1px solid #1a3c5e;
+    background: rgba(11,28,44,0.9);
+    color: #fff;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 14px;
+}
+.mermaid-editor-container .mermaid-preview {
+    background: rgba(0,0,0,0.85);
+    border: 1px solid #1a3c5e;
+    border-radius: 12px;
+    padding: 14px;
+    overflow: auto;
+    min-height: 400px;
+}
+.mermaid-modal-box {
+    width: min(95%, 1100px);
+    max-width: 1100px;
+}
+.mermaid-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.mermaid-toolbar button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    background: #1c75bc;
+    color: white;
+    font-weight: 700;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose'
+  });
+</script>
+</head>
+<body>
+
+<!-- FANCY ALERT -->
+<div id="fancy-alert">
+  <h3><i class="fa-solid fa-bell"></i>WE WON</h3>
+  <p id="fancy-alert-msg"></p>
+  <button onclick="document.getElementById('fancy-alert').style.display='none'">OK</button>
+</div>
+
+<!-- NOTIFICATION BAR -->
+<div id="live-notification">
+  <span id="notif-text"></span>
+  <span style="float:right;cursor:pointer;" onclick="document.getElementById('live-notification').style.display='none'">✖</span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-section" style="display:flex;align-items:center;gap:8px;">
+    <img src="we-win-logo.png" style="height: 80px; width: auto;" onerror="this.style.display='none'">
+  </div>
+  <div id="logged-in-ui">
+    <div class="player-info">
+      <div class="pname" id="disp-name">Player</div>
+      <div class="pid" id="disp-pid">#000000</div>
+      <div class="pbal"><i class="fa-solid fa-coins" style="color:var(--gold);font-size:12px;"></i> <span id="disp-coins">0</span> Coins</div>
+    </div>
+    <button class="btn-dep" onclick="openModal('depositModal')"><i class="fa-solid fa-plus"></i> BUY COINS</button>
+  </div>
+  <div id="auth-buttons">
+    <button class="btn-login" onclick="openModal('loginModal')">Log in</button>
+    <button class="btn-reg" onclick="openModal('registerModal')">Register</button>
+  </div>
+</header>
+
+
+<!-- HOME SECTION -->
+<div id="home-section" class="page-section active">
+    <!-- HERO BANNER -->
+    <div class="hero-banner interactive-aviator-banner" onclick="switchToSkyHigh()" style="margin-top:5px;">
+        <div class="hero-text-content">
+            <h2>🏆 WE WON — Live Prediction</h2>
+            <p class="bonus-tagpulse">🚀 SUPER OFFER: 100% BONUS ON FIRST DEPOSIT!</p>
+            <button class="play-btn">Play Now — It's Free!</button>
+        </div>
+        <div class="banner-aviator-visual">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Airplane_silhouette_blue.svg" alt="Aviator" class="aviator-svg-icon" style="filter: invert(1) drop-shadow(0 0 10px red);">
+            <div class="banner-graph-line"></div>
+        </div>
+    </div>
+
+    <!-- UPCOMING MATCHES -->
+    <div id="ipl-matches-container">...</div>
+    <div class="section-title">🎯 Upcoming Matches</div>
+    <div id="upcoming-matches-list" class="upcoming-grid"></div>
+</div>
+
+<!-- HISTORY SECTION -->
+<div id="history-section" class="page-section" style="display:none;">
+    <div class="section-title">🏆 Recently Ended Matches</div>
+    <div id="ended-matches-list" class="history-grid">
+        <p style="color:var(--text-muted);padding:20px;text-align:center;">Loading...</p>
+    </div>
+</div>
+
+
+<div id="skyhigh-section" class="page-section skyhigh-game" style="display:none;">
+  <!-- Sky High Modals -->
+  <div id="skyhigh-loginOverlay" class="skyhigh-overlay">
+    <div class="skyhigh-modal-card">
+      <h2>Sky High Player Setup</h2>
+      <div class="skyhigh-input-group">
+        <label>PLAYER NAME</label>
+        <input type="text" id="skyhigh-regName" class="skyhigh-form-input" placeholder="e.g. Rahul Gamer" required>
+      </div>
+      <button class="skyhigh-action-btn-full" onclick="skyhighSavePlayerAndStart()">ENTER GAME</button>
+    </div>
+  </div>
+
+  <div id="skyhigh-depositOverlay" class="skyhigh-overlay">
+    <div class="skyhigh-close-modal" onclick="skyhighCloseModal('skyhigh-depositOverlay')">&times;</div>
+    <div class="skyhigh-modal-card">
+      <h2>Deposit Points</h2>
+      <div class="skyhigh-quick-amounts">
+        <button class="skyhigh-quick-btn" onclick="skyhighSetDepAmt(100)">100</button>
+        <button class="skyhigh-quick-btn" onclick="skyhighSetDepAmt(500)">500</button>
+        <button class="skyhigh-quick-btn" onclick="skyhighSetDepAmt(1000)">1000</button>
+      </div>
+      <div class="skyhigh-input-group">
+        <label>AMOUNT TO DEPOSIT</label>
+        <input type="number" id="skyhigh-depAmount" class="skyhigh-form-input" value="100">
+      </div>
+      <button class="skyhigh-action-btn-full" onclick="skyhighProcessDeposit()">PROCEED TO PAY</button>
+    </div>
+  </div>
+
+  <div id="skyhigh-withdrawOverlay" class="skyhigh-overlay">
+    <div class="skyhigh-close-modal" onclick="skyhighCloseModal('skyhigh-withdrawOverlay')">&times;</div>
+    <div class="skyhigh-modal-card">
+      <h2>Withdraw Points</h2>
+      <div class="skyhigh-input-group">
+        <label>CURRENT BALANCE</label>
+        <div style="font-size: 18px; font-weight: bold; color: var(--green-win);" id="skyhigh-withBalanceDisplay">0.00</div>
+      </div>
+      <div class="skyhigh-input-group">
+        <label>AMOUNT TO WITHDRAW</label>
+        <input type="number" id="skyhigh-withAmount" class="skyhigh-form-input" placeholder="Enter Amount">
+      </div>
+      <button class="skyhigh-action-btn-full skyhigh-btn-red-full" onclick="skyhighProcessWithdraw()">WITHDRAW NOW</button>
+    </div>
+  </div>
+
+  <!-- Sky High Header -->
+  <div class="skyhigh-header">
+    <div class="skyhigh-logo-area">
+      <div class="skyhigh-logo">SKY HIGH</div>
+      <div class="skyhigh-player-name-tag" id="skyhigh-displayPlayerName">Guest</div>
+    </div>
+    <div class="skyhigh-wallet-container">
+      <div class="skyhigh-wallet-top">
+        <div class="skyhigh-wallet" id="skyhigh-walletDisplay">0.00 pts</div>
+        <button class="skyhigh-history-btn" onclick="skyhighOpenHistory()">🕒</button>
+      </div>
+      <div class="skyhigh-transact-btns">
+        <button class="skyhigh-t-btn skyhigh-dep-btn" onclick="skyhighOpenModal('skyhigh-depositOverlay')">+ DEPOSIT</button>
+        <button class="skyhigh-t-btn skyhigh-with-btn" onclick="skyhighOpenModal('skyhigh-withdrawOverlay')">- WITHDRAW</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Bar -->
+  <div class="skyhigh-history-bar" id="skyhigh-historyBox"></div>
+
+  <!-- History Modal -->
+  <div id="skyhigh-historyModal" class="skyhigh-history-modal">
+    <div class="skyhigh-modal-content">
+      <div class="skyhigh-modal-header">
+        <span>Last 50 Rounds</span>
+        <span class="skyhigh-close-modal" style="position:static;" onclick="skyhighCloseHistory()">&times;</span>
+      </div>
+      <div class="skyhigh-history-grid" id="skyhigh-historyGrid"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  
+<div class="skyhigh-graph-area" style="position: relative; overflow: hidden;">
+    <h1 id="skyhigh-multiplier" class="skyhigh-multiplier-text">1.00x</h1>
+    
+    <canvas id="skyhigh-gameCanvas"></canvas>
+    
+    <div id="skyhigh-crashMsg" class="skyhigh-crash-message" style="display:none;">FLEW AWAY!</div>
+    <div id="aviator-history-box" style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.8); border:1px solid #00ffcc; border-radius:5px; padding:5px; width:120px; font-size:12px; color:white; max-height:150px; overflow-y:auto;">
+    <div style="color:#00ffcc; font-weight:bold; text-align:center; margin-bottom:5px;">History</div>
+    <ul id="history-list" style="list-style:none; padding:0; margin:0; text-align:center;">
+        </ul>
+</div>
+</div>
+  <!-- Controls -->
+  <div class="skyhigh-controls">
+    <div class="skyhigh-panel">
+      <div class="skyhigh-tabs">
+        <div class="skyhigh-tab active" id="skyhigh-tab1-manual" onclick="skyhighSwitchMode(1, 'MANUAL')">ENTER</div>
+        <div class="skyhigh-tab" id="skyhigh-tab1-auto" onclick="skyhighSwitchMode(1, 'AUTO')">AUTO</div>
+      </div>
+
+      <div class="skyhigh-quick-btn-row">
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(1, 10)">+10</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(1, 50)">+50</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(1, 100)">+100</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(1, 500)">+500</button>
+      </div>
+
+      <div class="skyhigh-input-row">
+        <div class="skyhigh-counter-box">
+          <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(1, -10)">−</div>
+          <input type="number" id="skyhigh-ptsVal1" value="10" min="10" style="background:transparent; color:white; border:none; text-align:center; font-weight:bold; font-size:16px; width:60px;">
+          <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(1, 10)">+</div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-gray); font-weight: bold;">POINTS</div>
+      </div>
+
+      <div class="skyhigh-auto-cash-row" id="skyhigh-autoRow1">
+        <span style="font-size: 11px; color: var(--text-gray); font-weight: bold;">AUTO CASH OUT</span>
+        <div class="skyhigh-counter-box" style="width: 80px;">
+          <input type="number" id="skyhigh-autoTarget1" value="2.00" step="0.1" min="1.01">
+          <span style="color:var(--text-gray); font-size:12px;">x</span>
+        </div>
+      </div>
+
+      <button id="skyhigh-btn1" class="skyhigh-main-btn skyhigh-btn-green" onclick="skyhighHandleInput(1)">
+        ENTER <span class="skyhigh-btn-sub-text" id="skyhigh-sub1">10.00 pts</span>
+      </button>
+    </div>
+
+    <div class="skyhigh-panel">
+      <div class="skyhigh-tabs">
+        <div class="skyhigh-tab active" id="skyhigh-tab2-manual" onclick="skyhighSwitchMode(2, 'MANUAL')">ENTER</div>
+        <div class="skyhigh-tab" id="skyhigh-tab2-auto" onclick="skyhighSwitchMode(2, 'AUTO')">AUTO</div>
+      </div>
+
+      <div class="skyhigh-quick-btn-row">
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(2, 10)">+10</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(2, 50)">+50</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(2, 100)">+100</button>
+        <button class="skyhigh-q-btn" onclick="skyhighAddQuickPts(2, 500)">+500</button>
+      </div>
+
+      <div class="skyhigh-input-row">
+        <div class="skyhigh-counter-box">
+          <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(2, -10)">−</div>
+          <span id="skyhigh-ptsVal2">20</span>
+          <div class="skyhigh-counter-btn" onclick="skyhighAdjustPts(2, 10)">+</div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-gray); font-weight: bold;">POINTS</div>
+      </div>
+
+      <div class="skyhigh-auto-cash-row" id="skyhigh-autoRow2">
+        <span style="font-size: 11px; color: var(--text-gray); font-weight: bold;">AUTO CASH OUT</span>
+        <div class="skyhigh-counter-box" style="width: 80px;">
+          <input type="number" id="skyhigh-autoTarget2" value="3.00" step="0.1" min="1.01">
+          <span style="color:var(--text-gray); font-size:12px;">x</span>
+        </div>
+      </div>
+
+      <button id="skyhigh-btn2" class="skyhigh-main-btn skyhigh-btn-green" onclick="skyhighHandleInput(2)">
+        ENTER <span class="skyhigh-btn-sub-text" id="skyhigh-sub2">20.00 pts</span>
+      </button>
+    </div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <!-- HOME -->
+    <div class="nav-item active" id="nav-home" onclick="switchTab('home-section', 'nav-home')">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </div>
+
+    <!-- SKY HIGH -->
+    <div class="nav-item" id="nav-skyhigh" onclick="switchTab('skyhigh-section', 'nav-skyhigh')">
+        <i class="fas fa-plane-departure"></i>
+        <span>Sky High</span>
+    </div>
+
+    <!-- BUY COINS (CENTER) -->
+    <div class="nav-item bet-slip" onclick="openModal('depositModal')" title="Buy Coins">
+        <i class="fas fa-coins"></i>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="nav-item" id="nav-history" onclick="switchTab('history-section', 'nav-history')">
+        <i class="fas fa-history"></i>
+        <span>History</span>
+    </div>
+
+    <!-- MENU -->
+    <div class="nav-item" id="nav-menu" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
+    </div>
+</div>
+
+<!-- SIDE MENU -->
+<div class="side-menu" id="sideMenu">
+  <div style="text-align:right;margin-bottom:10px;">
+    <span style="font-size:22px;cursor:pointer;color:var(--text-muted);" onclick="toggleMenu()">✖</span>
+  </div>
+  <div style="border-bottom:1px solid #1a3c5e;padding-bottom:15px;margin-bottom:10px;">
+    <div style="font-size:13px;color:var(--text-muted);" id="menu-player-name">Not logged in</div>
+    <div style="font-size:11px;color:var(--gold);" id="menu-player-pid"></div>
+    <div style="font-size:15px;font-weight:bold;margin-top:4px;"><i class="fa-solid fa-coins" style="color:var(--gold);"></i> <span id="menu-coins">0</span> Coins</div>
+  </div>
+  <div class="menu-item" onclick="openChat()"><i class="fa-solid fa-comments"></i> Chat Support</div>
+  <div class="menu-item" onclick="showPlayerHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Coin History</div>
+  <div class="menu-item" onclick="openMermaidGraphEditor()"><i class="fa-solid fa-diagram-project"></i> Graphify</div>
+  <div class="menu-item" onclick="openWithdrawModal()"><i class="fa-solid fa-wallet"></i> Withdraw</div>
+  <div class="menu-item" onclick="checkAdminAccess()" style="border-top:2px solid #1a3c5e;margin-top:15px;color:#ff4d4d;">
+    <i class="fa-solid fa-user-shield"></i> Admin Panel
+  </div>
+  <div class="menu-item" id="menu-logout" style="display:none;color:#ff4d4d;" onclick="logout()">
+    <i class="fa-solid fa-right-from-bracket"></i> Logout
+  </div>
+</div>
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- REGISTER -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeModal('registerModal')">✖</button>
+    <h3 style="margin-bottom:25px; color: #529626; font-size: 24px; text-align: center; text-shadow: 0 0 10px rgba(82, 150, 38, 0.5);">
+        <i class="fa-solid fa-rocket"></i> Create Account
+    </h3>
+    
+    <div class="form-group"><label>Player Name</label><input type="text" id="regName" placeholder="Apna naam dalein"></div>
+    <div class="form-group"><label>Mobile No.</label><input type="text" id="regMobile" placeholder="99999XXXXX"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
+    <div class="form-group"><label>Password (min 6 chars)</label><input type="password" id="regPass" placeholder="Password"></div>
+    <div class="form-group"><label>Referral Code (optional)</label><input type="text" id="regRef" placeholder="Referral Code"></div>
+    
+    <button class="submit-btn" id="reg-btn" onclick="handleRegister()">Register & Get 500 Coins Free!</button>
+    
+    <p style="text-align:center; margin-top:18px; font-size:13px; color:var(--text-muted);">
+        Already have account? <span onclick="closeModal('registerModal');openModal('loginModal');" style="color:var(--blue); cursor:pointer; font-weight: bold;">Log In</span>
+    </p>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeModal('loginModal')">✖</button>
+    <h3 style="margin-bottom:20px;color:var(--blue);">🔐 Log In</h3>
+    <div class="form-group"><label>Email / Mobile No.</label><input type="text" id="logId" placeholder="Mobile No. or Email"></div>
+
+<div class="form-group"><label>Password</label><input type="password" id="logPass" placeholder="Password"></div>
+    <button class="submit-btn" id="login-btn" onclick="handleLogin()">Log In</button>
+    <p style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted);">New here? <span onclick="closeModal('loginModal');openModal('registerModal');" style="color:var(--green);cursor:pointer;">Register Free</span></p>
+  </div>
+</div>
+
+<!-- BUY COINS / DEPOSIT -->
+<div class="modal-overlay" id="depositModal">
+  <div class="modal-box" onclick="event.stopPropagation()" style="text-align:center;">
+    <button class="close-btn" onclick="closeModal('depositModal')">✖</button>
+    <h3 style="margin-bottom:15px;">💰 Buy Coins</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
+      <div onclick="selectPackage(100,10)" class="coin-pkg" data-amt="100">
+        <div style="font-size:1.5rem;font-weight:900;color:var(--gold);">100</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Coins</div>
+        <div style="font-size:1rem;font-weight:bold;margin-top:4px;">₹10</div>
+      </div>
+      <div onclick="selectPackage(500,45)" class="coin-pkg" data-amt="500">
+        <div style="font-size:1.5rem;font-weight:900;color:var(--gold);">500</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Coins</div>
+        <div style="font-size:1rem;font-weight:bold;margin-top:4px;">₹45 <small style="color:var(--green);font-size:0.7rem;">SAVE 10%</small></div>
+      </div>
+      <div onclick="selectPackage(1000,80)" class="coin-pkg" data-amt="1000">
+        <div style="font-size:1.5rem;font-weight:900;color:var(--gold);">1000</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Coins</div>
+        <div style="font-size:1rem;font-weight:bold;margin-top:4px;">₹80 <small style="color:var(--green);font-size:0.7rem;">SAVE 20%</small></div>
+      </div>
+      <div onclick="selectPackage(5000,350)" class="coin-pkg" data-amt="5000" style="border-color:var(--gold)!important;">
+        <div style="font-size:1.5rem;font-weight:900;color:var(--gold);">5000</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Coins</div>
+        <div style="font-size:1rem;font-weight:bold;margin-top:4px;">₹350 <small style="color:var(--green);font-size:0.7rem;">BEST VALUE</small></div>
+      </div>
+    </div>
+    <style>.coin-pkg{background:#0b1c2c;border:2px solid #1a3c5e;border-radius:10px;padding:15px;cursor:pointer;transition:0.2s;} .coin-pkg:hover,.coin-pkg.selected{border-color:var(--green);background:#0a2015;}</style>
+    <div id="selected-pkg-info" style="background:#0b1c2c;padding:12px;border-radius:8px;margin-bottom:15px;display:none;">
+      <div style="font-size:13px;color:var(--text-muted);">Selected: <span id="sel-coins" style="color:var(--gold);font-weight:bold;"></span> Coins for <span id="sel-price" style="color:white;font-weight:bold;"></span></div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Payment Method</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div onclick="processDeposit('G-Pay')" style="background:white;padding:12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Google_Pay_Logo_%282020%29.svg/2560px-Google_Pay_Logo_%282020%29.svg.png" style="height:25px;" alt="GPay">
+      </div>
+      <div onclick="processDeposit('UPI')" style="background:white;padding:12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo.png/1200px-UPI-Logo.png" style="height:25px;" alt="UPI">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW -->
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:350px;">
+    <button class="close-btn" onclick="closeModal('withdrawModal')">✖</button>
+    <h3 style="color:#ff4d4d;margin-bottom:15px;">💸 Withdraw</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Coins: <span id="w-coins" style="color:var(--gold);font-weight:bold;">0</span> &nbsp;|&nbsp; Min withdrawal: 500 coins = ₹45</p>
+    <div class="form-group"><label>Coins to Withdraw (min 500)</label><input type="number" id="wCoins" placeholder="e.g. 500"></div>
+    <div class="form-group"><label>UPI ID</label><input type="text" id="wUpi" placeholder="name@upi"></div>
+    <div id="w-calc" style="background:#0b1c2c;padding:8px;border-radius:5px;margin-bottom:12px;font-size:13px;color:var(--text-muted);display:none;">
+      You will receive: <span id="w-inr" style="color:var(--green);font-weight:bold;"></span>
+    </div>
+    <button class="submit-btn" style="background:#ff4d4d;" onclick="requestWithdrawal()">Submit Request</button>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box wide" onclick="event.stopPropagation()" style="height:85vh;display:flex;flex-direction:column;border:2px solid red;">
+    <button class="close-btn" onclick="closeModal('adminModal')">✖</button>
+    <h2 style="color:red;border-bottom:1px solid #333;padding-bottom:10px;margin-bottom:12px;font-size:16px;">⚡ WE WON Admin Panel</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+      <button onclick="showAdminTab('match-tab')" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Live Match</button>
+      <button onclick="syncAPI()" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#2196F3;"><i class="fa-solid fa-sync"></i> Sync API</button>
+      <button onclick="showAdminTab('over-tab')" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Over Result</button>
+      <button onclick="showAdminTab('chat-tab')" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Chats</button>
+      <button onclick="showAdminTab('notif-tab')" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Notif</button>
+      <button id="toggle-source-btn" onclick="toggleDataSource()" class="btn btn-warning" style="background:#ff9800; color:#fff;">
+    <i class="fas fa-toggle-on"></i> Mode: Loading...
+</button>
+      <button onclick="showAdminTab('users-tab');loadAdminUsers();" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Players</button>
+      <button onclick="showAdminTab('withdraw-tab');loadWithdrawalRequests();" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#1a3c5e;">Withdrawals</button>
+      <button onclick="showAdminTab('end-match-tab')" class="submit-btn" style="width:auto;padding:5px 12px;font-size:12px;background:#e53935;">End Match</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- Live Match Tab -->
+      <div id="match-tab" class="admin-pane active">
+        <div class="form-group"><label>Tournament</label><input type="text" id="adminTour" value="IPL 2026"></div>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:2;"><label>Team 1</label><input type="text" id="adminT1"></div>
+          <div class="form-group" style="flex:1;"><label>Score (e.g. 145/3)</label><input type="text" id="adminS1"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:2;"><label>Team 2</label><input type="text" id="adminT2"></div>
+          <div class="form-group" style="flex:1;"><label>Score</label><input type="text" id="adminS2"></div>
+        </div>
+        <div class="form-group"><label>Match Status</label><input type="text" id="adminStatus" placeholder="e.g. MI elect to bat"></div>
+        <div class="form-group"><label>Current Over No.</label><input type="number" id="adminOver" value="1" min="1" max="20"></div>
+        <button class="submit-btn" style="background:red;" onclick="adminUpdateMatch()">Update Live Match</button>
+      </div>
+
+      <!-- Over Result Tab -->
+      <div id="over-tab" class="admin-pane">
+        <h3 style="margin-bottom:12px;color:white;">Enter Completed Over Result</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Jab over khatam ho, actual result yahan bharein. System automatically check karega kaun jeeta.</p>
+        <div class="form-group"><label>Over Number</label><input type="number" id="resultOver" placeholder="e.g. 12" min="1" max="20"></div>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;"><label>Actual Runs in Over</label><input type="number" id="resultRuns" placeholder="e.g. 14"></div>
+          <div class="form-group" style="flex:1;"><label>Sixes</label><input type="number" id="resultSixes" placeholder="e.g. 2"></div>
+          <div class="form-group" style="flex:1;"><label>Fours</label><input type="number" id="resultFours" placeholder="e.g. 1"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;"><label>Team 1 Final Runs</label><input type="number" id="resultT1Runs" placeholder="e.g. 185"></div>
+          <div class="form-group" style="flex:1;"><label>Team 1 Wickets</label><input type="number" id="resultT1Wkts" placeholder="e.g. 6"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;"><label>Team 2 Final Runs</label><input type="number" id="resultT2Runs" placeholder="e.g. 178"></div>
+          <div class="form-group" style="flex:1;"><label>Team 2 Wickets</label><input type="number" id="resultT2Wkts" placeholder="e.g. 8"></div>
+        </div>
+        <button class="submit-btn" style="background:#ff9800;" onclick="adminSubmitOverResult()">Process Over Result &amp; Pay Winners</button>
+        <div id="over-result-log" style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
+      </div>
+
+      <!-- Chat Tab -->
+      <div id="chat-tab" class="admin-pane">
+        <div id="admin-chat-list" style="border:1px solid #333;padding:10px;min-height:100px;max-height:300px;overflow-y:auto;margin-bottom:10px;border-radius:5px;"></div>
+        <div style="display:flex;gap:5px;">
+          <input type="text" id="adminReply" placeholder="Reply..." style="flex:1;padding:10px;background:var(--bg-main);color:white;border:1px solid #333;border-radius:5px;">
+          <button onclick="sendAdminReply()" style="background:red;color:white;border:none;padding:10px 15px;border-radius:5px;cursor:pointer;font-weight:bold;">Send</button>
+        </div>
+      </div>
+
+      <!-- Notif Tab -->
+      <div id="notif-tab" class="admin-pane">
+        <div class="form-group"><label>Notification Text</label><input type="text" id="newNotif" placeholder="Enter message..."></div>
+        <button onclick="triggerLiveNotif()" class="submit-btn" style="background:orange;">Send to All Players</button>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="users-tab" class="admin-pane">
+        <h3 style="margin-bottom:10px;">Players List</h3>
+        <div class="form-group"><input type="text" id="searchPlayer" placeholder="Search by name, ID, or mobile..." oninput="loadAdminUsers()"></div>
+        <div id="admin-user-list"></div>
+      </div>
+
+      <!-- Withdrawals Tab -->
+      <div id="withdraw-tab" class="admin-pane">
+        <h3 style="margin-bottom:10px;">Withdrawal Requests</h3>
+        <div id="withdraw-request-list"></div>
+      </div>
+
+      <!-- End Match Tab -->
+      <div id="end-match-tab" class="admin-pane">
+        <h3 style="color:var(--red);margin-bottom:12px;">⚠️ End Current Match</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:15px;">Match khatam hone ke baad yahan details bharein. Match automatically "Recently Ended" section mein chala jayega.</p>
+        <div style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;"><label>Team 1 Final Score</label><input type="text" id="end-s1" placeholder="185/6"></div>
+          <div class="form-group" style="flex:1;"><label>Team 2 Final Score</label><input type="text" id="end-s2" placeholder="186/4"></div>
+        </div>
+        <div class="form-group"><label>Result (e.g. CSK won by 6 wickets)</label><input type="text" id="end-result" placeholder="Winner..."></div>
+        <button class="submit-btn" style="background:var(--red);" onclick="adminEndMatch()">End Match &amp; Move to History</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:380px;padding:0;display:flex;flex-direction:column;border:1px solid #1a3c5e;">
+    <div style="background:var(--blue);padding:15px;color:white;display:flex;align-items:center;justify-content:space-between;border-radius:12px 12px 0 0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="background:white;border-radius:50%;width:35px;height:35px;display:flex;justify-content:center;align-items:center;color:var(--blue);font-weight:bold;font-size:10px;">WW</div>
+        <div>
+          <h3 style="margin:0;font-size:15px;">WE WON Support</h3>
+          <span style="font-size:11px;"><i class="fa-solid fa-circle" style="color:#00ff00;font-size:8px;"></i> Online</span>
+        </div>
+      </div>
+      <button onclick="closeModal('chatModal')" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;">✖</button>
+    </div>
+    <div id="chat-messages">
+      <div style="align-self:flex-start;background:#15304b;color:white;padding:10px 15px;border-radius:0 15px 15px 15px;max-width:80%;font-size:14px;border:1px solid #1a3c5e;">
+        Namaste! 🙏 WE WON Support mein aapka swagat hai. Apna Player ID (#XXXXXX) share karein for faster help.
+      </div>
+    </div>
+    <div style="padding:12px;background:#11283d;display:flex;gap:10px;border-top:1px solid #1a3c5e;border-radius:0 0 12px 12px;">
+      <input type="text" id="userMsgInput" placeholder="Write your message..." onkeypress="if(event.key==='Enter')sendUserMsg()" style="flex:1;padding:10px 15px;border-radius:25px;border:1px solid #1a3c5e;background:#0b1c2c;color:white;outline:none;font-size:13px;">
+      <button onclick="sendUserMsg()" style="background:var(--green);border:none;color:white;width:42px;height:42px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- COIN HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeModal('historyModal')">✖</button>
+    <h3 style="margin-bottom:15px;color:var(--green);">💰 Coin History</h3>
+    <div id="coin-history-list"></div>
+  </div>
+</div>
+
+<!-- MERMAID GRAPH EDITOR -->
+<div class="modal-overlay" id="mermaidEditorModal">
+  <div class="modal-box mermaid-modal-box" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeModal('mermaidEditorModal')">✖</button>
+    <h3 style="margin-bottom:15px;color:#1c75bc;">🧠 Graphify Mermaid Editor</h3>
+    <div class="mermaid-toolbar">
+      <div style="color:#fff;font-size:13px;">Edit Mermaid source and preview the generated diagram live.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="renderMermaidPreview()">Render</button>
+        <button onclick="setDefaultMermaidGraph(); renderMermaidPreview();">Load Default Graph</button>
+        <button onclick="copyMermaidSource()">Copy Source</button>
+      </div>
+    </div>
+    <div class="mermaid-editor-container">
+      <textarea id="mermaid-src" oninput="renderMermaidPreview()" placeholder="Type Mermaid diagram text here..."></textarea>
+      <div id="mermaid-render" class="mermaid-preview"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="menuModal" style="display:none;" onclick="closeModal('menuModal')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('menuModal')">X</button>
+            <h3 style="color:var(--blue); margin-bottom: 20px;"><i class="fas fa-bars"></i> Menu</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                 <button class="submit-btn" onclick="showFancyAlert('Profile coming soon!')">My Profile</button>
+                 <button class="submit-btn" style="background:#dc3545;" onclick="sb.auth.signOut(); window.location.reload();">Log Out</button>
+            </div>
+        </div>
+    </div>
+    
+
+
+
+
+<script>
+// ════════════════════════════════════════
+// SUPABASE INIT
+// ════════════════════════════════════════
+// ⚠️ SECURITY NOTE: API keys should be moved to environment variables or backend proxy
+// Current setup exposes keys in browser - for production, use RLS policies and backend auth
+const SUPA_URL = 'https://lhbsnhwqvdhhzjilbgte.supabase.co';
+const SUPA_KEY = 'sb_publishable_9cMEscWTC_f31zQXjdJfIA_U4u7wBR_';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ════════════════════════════════════════
+// API KEYS — rotate automatically
+// ════════════════════════════════════════
+const API_KEYS = [
+  '6992e96c-45e2-4daa-88a1-0cddfb9b6a50',
+  '8acbde99-9a6b-4a17-9aaa-4fa2e2b2aba6',
+  'fbc6a4a7-a5fa-4c02-920c-9b465c4f59c1'
+];
+let currentKeyIndex = 0;
+function getApiKey() { return API_KEYS[currentKeyIndex]; }
+function rotateKey() { currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length; console.log('API key rotated to #'+(currentKeyIndex+1)); }
+
+const API_FETCH_TIMEOUT_MS = 10000;
+async function fetchWithTimeout(url, options = {}, timeout = API_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal, ...options });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+// ════════════════════════════════════════
+// TEAM DATA — logos & photos from folder
+// ════════════════════════════════════════
+const TEAMS = {
+  'Mumbai Indians':           { logo:'MI-logo.png',   photo:'MI-team.png',   short:'MI'   },
+  'Chennai Super Kings':      { logo:'CSK-logo.png',  photo:'CSK-team.png',  short:'CSK'  },
+  'Royal Challengers Bangalore':{ logo:'RCB-logo.png',photo:'RCB-team.png',  short:'RCB'  },
+  'Kolkata Knight Riders':    { logo:'KKR-logo.png',  photo:'KKR-team.png',  short:'KKR'  },
+  'Delhi Capitals':           { logo:'DC-logo.png',   photo:'DC-team.png',   short:'DC'   },
+  'Punjab Kings':             { logo:'PBKS-logo.png', photo:'PBKS-team.png', short:'PBKS' },
+  'Rajasthan Royals':         { logo:'RR-logo.png',   photo:'RR-team.png',   short:'RR'   },
+  'Sunrisers Hyderabad':      { logo:'SRH-logo.png',  photo:'SRH-team.png',  short:'SRH'  },
+  'Gujarat Titans':           { logo:'GT-logo.png',   photo:'GT-team.png',   short:'GT'   },
+  'Lucknow Super Giants':     { logo:'LSG-logo.png',  photo:'LSG-team.png',  short:'LSG'  }
+};
+function teamLogo(name){ return TEAMS[name] ? TEAMS[name].logo : 'IND.png'; }
+function teamPhoto(name){ return TEAMS[name] ? TEAMS[name].photo : 'IND.png'; }
+function teamShort(name){ return TEAMS[name] ? TEAMS[name].short : name.substring(0,3).toUpperCase(); }
+
+
+var currentUser = null;   // Supabase auth user
+var playerData  = null;   // players table row
+var selectedPkg = null;   // {coins, price}
+var liveMatchData = null; // current live match from DB
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+(async function init(){
+  try {
+    // Check existing session
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session){
+      currentUser = session.user;
+      await loadPlayerData();
+    }
+    updateBalanceUI();
+    await updateLiveCricketData();
+    updateUpcomingMatches();
+    await loadEndedMatches();
+    setInterval(updateLiveCricketData, 300000); // refresh every 5 minutes to avoid API rate limits
+  } catch(err) {
+    console.error("Init failed:", err);
+    showFancyAlert('App startup issue. Please refresh the page.');
+  }
+})();
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function showFancyAlert(msg){
+  document.getElementById('fancy-alert-msg').innerText = msg;
+  document.getElementById('fancy-alert').style.display = 'block';
+}
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.classList.add('open');
+        modal.style.display = 'flex'; // Ya 'block', jo bhi aapke CSS mein ho
+    } else {
+        console.error("Dhyan dein: Modal ID '" + id + "' nahi mili!");
+    }
+}
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('open');
+        modal.style.display = 'none'; // Force hide
+    } else {
+        console.warn("Modal ID nahi mili:", modalId);
+    }
+}
+document.querySelectorAll('.modal-overlay').forEach(function(o){
+  o.addEventListener('click', function(e){ if(e.target===o) closeModal(o.id); });
+});
+// Ye function aaisa dikhna chahiye
+// Universal Tab Switcher
+function switchTab(sectionId, navId) {
+    console.log("Switching to:", sectionId);
+
+    // 1. Saare sections dhoondo aur hide karo
+    const sections = document.querySelectorAll('.page-section');
+    sections.forEach(sec => {
+        sec.classList.remove('active');
+        sec.style.display = 'none';
+    });
+
+    // 2. Target section ko dhoondo
+    const target = document.getElementById(sectionId);
+    if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+    } else {
+        console.warn("Oops! Section ID nahi mili:", sectionId);
+        // Emergency Fallback: Agar kuch na mile toh home dikhane ki koshish karo
+        const home = document.getElementById('home-section');
+        if(home) { home.style.display = 'block'; home.classList.add('active'); }
+    }
+
+    // 3. Nav icons update karo (Active color change)
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    const activeNav = document.getElementById(navId);
+    if (activeNav) activeNav.classList.add('active');
+}
+function toggleMenu(){ document.getElementById('sideMenu').classList.toggle('open'); }
+function showAdminTab(id){
+  document.querySelectorAll('.admin-pane').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+function setBtnLoading(id,loading,text){
+  var b=document.getElementById(id);
+  if(!b) return;
+  b.disabled=loading;
+  b.innerHTML = loading ? '<div class="spinner" style="width:16px;height:16px;margin:0 auto;"></div>' : text;
+}
+
+// Generate 6-digit player ID
+function generatePlayerId(){
+  return 'WW' + Math.floor(100000 + Math.random()*900000);
+}
+
+// Coins to INR (10 coins = ₹1 approximately)
+function coinsToINR(coins){ return (coins * 0.09).toFixed(2); }
+
+// ════════════════════════════════════════
+// BALANCE UI
+// ════════════════════════════════════════
+function updateBalanceUI(){
+  var coins = playerData ? playerData.coins : 0;
+  document.getElementById('disp-coins').innerText = coins;
+  document.getElementById('menu-coins').innerText = coins;
+  if(playerData){
+    document.getElementById('disp-name').innerText = playerData.name;
+    document.getElementById('disp-pid').innerText = '#'+playerData.player_id;
+    document.getElementById('menu-player-name').innerText = playerData.name;
+    document.getElementById('menu-player-pid').innerText = '#'+playerData.player_id;
+  }
+  var wc=document.getElementById('w-coins');
+  if(wc) wc.innerText = coins;
+}
+
+// ════════════════════════════════════════
+// LOAD PLAYER DATA FROM SUPABASE
+// ════════════════════════════════════════
+async function loadPlayerData(){
+  if(!currentUser) return;
+  var { data, error } = await sb.from('players').select('*').eq('auth_id', currentUser.id).single();
+  if(!error && data){
+    playerData = data;
+    updateBalanceUI();
+    showLoggedInUI();
+  }
+}
+
+// ════════════════════════════════════════
+// REGISTER
+// ════════════════════════════════════════
+async function handleRegister(){
+    // Nayi IDs se data uthana (Sync with Attractive UI)
+    var name   = document.getElementById('regName').value.trim();
+    var mobile = document.getElementById('regMobile').value.trim();
+    var email  = document.getElementById('regEmail').value.trim();
+    var pass   = document.getElementById('regPass').value;
+    var ref    = document.getElementById('regRef').value.trim();
+
+    // Validation
+    if(!name || !mobile || !email || !pass){ 
+        showFancyAlert('Bhai, saari details bharna zaroori hai! 🛑'); 
+        return; 
+    }
+    if(pass.length < 6){ 
+        showFancyAlert('Password kam se kam 6 characters ka hona chahiye! 🔐'); 
+        return; 
+    }
+
+    setBtnLoading('reg-btn', true, '');
+
+    // 1. Supabase Auth (Email + Pass)
+    var { data, error } = await sb.auth.signUp({ email, password: pass });
+
+    if(error){ 
+        setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!'); 
+        showFancyAlert('Error: ' + error.message); 
+        return; 
+    }
+
+    var pid = generatePlayerId();
+
+    // 2. Insert Player Record (Database) - with 500 coin welcome bonus
+    var { error: dbErr } = await sb.from('players').insert({
+    auth_id: data.user.id,
+    name: name,
+    player_id: pid,
+    mobile: mobile,
+    coins: 500,
+    referral_code: pid,
+    created_at: new Date().toISOString()
+});
+
+    if(dbErr){ 
+        setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!'); 
+        showFancyAlert('DB Error: ' + dbErr.message); 
+        return; 
+    }
+
+    // 3. Log Welcome Bonus in Transactions
+    var { error: txnErr } = await sb.from('transactions').insert({
+        player_id: pid,
+        type: 'bonus',
+        coins: 500,
+        description: 'Welcome bonus — Registration',
+        created_at: new Date().toISOString()
+    });
+    
+    if(txnErr) {
+        console.error('Transaction log failed:', txnErr);
+    }
+
+    // Final Success Logic
+    setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!');
+    currentUser = data.user;
+    await loadPlayerData();
+    closeModal('registerModal');
+
+    // UI Cleanup
+    document.getElementById('regName').value = '';
+    document.getElementById('regMobile').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPass').value = '';
+
+    showFancyAlert('Registration Successful! 🎉\nWelcome ' + name + '!\nPlayer ID: #' + pid + '\n OFFER: 100% BONUS ON FIRST DEPOSIT! 💰');
+}
+
+// ════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════
+async function handleLogin() {
+    console.log("Login button clicked!"); // Debugging ke liye
+    
+    const idField = document.getElementById('logId');   // Email/Mobile box
+const passField = document.getElementById('logPass'); // Password box
+    if (!idField || !passField) {
+        console.error("Input fields nahi mile! IDs check karein.");
+        return;
+    }
+
+    const id = idField.value.trim();
+    const pass = passField.value;
+
+    if (!id || !pass) {
+        showFancyAlert('Bhai, ID aur Password dono chahiye! 🔐');
+        return;
+    }
+
+    setBtnLoading('login-btn', true, '');
+
+    // Mobile ko email mein convert karna
+    const email = id.includes('@') ? id : id + '@wewin.game';
+
+    try {
+        const { data, error } = await sb.auth.signInWithPassword({
+            email: email,
+            password: pass
+        });
+
+        if (error) throw error;
+
+        currentUser = data.user;
+        await loadPlayerData();
+
+        // Ban check
+        if (playerData && playerData.banned) {
+            await sb.auth.signOut();
+            showFancyAlert('Aapka account banned hai! 🚫');
+            setBtnLoading('login-btn', false, 'Log In');
+            return;
+        }
+
+        showFancyAlert('Login Successful! 🎉');
+        closeModal('loginModal');
+        window.location.reload(); // State sync ke liye
+
+    } catch (err) {
+        setBtnLoading('login-btn', false, 'Log In');
+        showFancyAlert('Error: ' + err.message);
+        console.error("Login Error:", err);
+    }
+}
+// Function to switch to Sky High Tab automatically
+function switchToSkyHigh() {
+    console.log("Redirecting to Sky High...");
+    switchTab('skyhigh-section', 'nav-skyhigh'); // Hamara generic tab switching function call karein
+}
+function showLoggedInUI(){
+  document.getElementById('auth-buttons').style.display='none';
+  document.getElementById('logged-in-ui').style.display='flex';
+  document.getElementById('menu-logout').style.display='flex';
+  updateBalanceUI();
+}
+
+// ════════════════════════════════════════
+// LOGOUT
+// ════════════════════════════════════════
+async function logout(){
+  await sb.auth.signOut();
+  currentUser=null; playerData=null;
+  document.getElementById('auth-buttons').style.display='flex';
+  document.getElementById('logged-in-ui').style.display='none';
+  document.getElementById('menu-logout').style.display='none';
+  document.getElementById('sideMenu').classList.remove('open');
+  document.getElementById('disp-coins').innerText='0';
+  document.getElementById('menu-coins').innerText='0';
+  showFancyAlert('Logged out successfully!');
+}
+
+// ════════════════════════════════════════
+// BUY COINS
+// ════════════════════════════════════════
+function selectPackage(coins, price){
+  selectedPkg = {coins, price};
+  document.querySelectorAll('.coin-pkg').forEach(function(p){ p.classList.remove('selected'); });
+  var el = document.querySelector('.coin-pkg[data-amt="'+coins+'"]');
+  if(el) el.classList.add('selected');
+  document.getElementById('sel-coins').innerText = coins;
+  document.getElementById('sel-price').innerText = '₹'+price;
+  document.getElementById('selected-pkg-info').style.display='block';
+}
+
+async function processDeposit(method){
+    if(!currentUser){ showFancyAlert('Pehle Log In karein!'); return; }
+    if(!selectedPkg){ showFancyAlert('Pehle ek coin package select karein!'); return; }
+    if(!playerData){ showFancyAlert('Player data missing! Please refresh and try again.'); return; }
+
+    var baseCoins = selectedPkg.coins;
+    var price = selectedPkg.price;
+    var finalCoins = baseCoins;
+    var bonusText = "";
+
+    // 1. Check karo kya ye user ka pehla deposit hai
+    var { data: existingDeposits } = await sb.from('transactions')
+        .select('id')
+        .eq('player_id', playerData.player_id)
+        .eq('type', 'deposit');
+
+    // 2. Agar pehla deposit hai, toh 100% Bonus (Amount Double)
+    if(!existingDeposits || existingDeposits.length === 0){
+        finalCoins = baseCoins * 2;
+        bonusText = "\n🎁 FIRST DEPOSIT BONUS: " + baseCoins + " Extra Coins Added!";
+    }
+
+    // 3. Update Player Balance in DB - use safe coin value
+    var currentCoins = playerData.coins || 0;
+    var { error } = await sb.from('players')
+        .update({ coins: currentCoins + finalCoins })
+        .eq('player_id', playerData.player_id);
+
+    if(error){ showFancyAlert('Error: ' + error.message); return; }
+
+    // 4. Log Transaction
+    var { error: txnErr } = await sb.from('transactions').insert({
+        player_id: playerData.player_id,
+        type: 'deposit',
+        coins: finalCoins,
+        description: 'Deposit via ' + method + ' (₹' + price + ')' + (bonusText ? " + 100% Bonus" : ""),
+        created_at: new Date().toISOString()
+    });
+    
+    if(txnErr) {
+        console.error('Transaction log failed:', txnErr);
+    }
+
+    // 5. Update UI
+    playerData.coins += finalCoins;
+    updateBalanceUI();
+    closeModal('depositModal');
+    
+    showFancyAlert('Deposit Successful! 🎉' + bonusText + '\nTotal ' + finalCoins + ' Coins credited!');
+}
+
+// ════════════════════════════════════════
+// WITHDRAW
+// ════════════════════════════════════════
+function openWithdrawModal(){
+  if(!currentUser){ showFancyAlert('Pehle Log In karein!'); return; }
+  document.getElementById('w-coins').innerText = playerData ? playerData.coins : 0;
+  openModal('withdrawModal');
+  document.getElementById('sideMenu').classList.remove('open');
+}
+
+// Withdrawal coin input handler - remove old listener first to prevent memory leak
+var wCoinsElement = document.getElementById('wCoins');
+if(wCoinsElement) {
+  wCoinsElement.removeEventListener('input', wCoinsUpdateHandler);
+  wCoinsElement.addEventListener('input', wCoinsUpdateHandler);
+}
+
+function wCoinsUpdateHandler() {
+  var c = parseInt(this.value)||0;
+  if(c>=500){
+    document.getElementById('w-calc').style.display='block';
+    document.getElementById('w-inr').innerText = '₹'+coinsToINR(c);
+  } else {
+    document.getElementById('w-calc').style.display='none';
+  }
+}
+
+async function requestWithdrawal(){
+  if(!currentUser||!playerData){ showFancyAlert('Pehle Log In karein!'); return; }
+  var coins = parseInt(document.getElementById('wCoins').value)||0;
+  var upi   = document.getElementById('wUpi').value.trim();
+  if(coins<500){ showFancyAlert('Minimum 500 coins withdraw kar sakte hain!'); return; }
+  if(coins > playerData.coins){ showFancyAlert('Insufficient coins!'); return; }
+  if(!upi.includes('@')){ showFancyAlert('Valid UPI ID dalein (e.g. name@upi)'); return; }
+
+  var inr = coinsToINR(coins);
+  // Deduct coins
+  var { error } = await sb.from('players').update({ coins: playerData.coins - coins }).eq('player_id', playerData.player_id);
+  if(error){ showFancyAlert('Error: '+error.message); return; }
+
+  await sb.from('withdrawals').insert({
+    player_id: playerData.player_id,
+    player_name: playerData.name,
+    coins: coins,
+    inr_amount: parseFloat(inr),
+    upi_id: upi,
+    status: 'Pending',
+    created_at: new Date().toISOString()
+  });
+
+  await sb.from('transactions').insert({
+    player_id: playerData.player_id,
+    type: 'withdraw',
+    coins: -coins,
+    description: 'Withdrawal request: '+coins+' coins = ₹'+inr+' to '+upi,
+    created_at: new Date().toISOString()
+  });
+
+  playerData.coins -= coins;
+  updateBalanceUI();
+  document.getElementById('wCoins').value='';
+  document.getElementById('wUpi').value='';
+  closeModal('withdrawModal');
+  showFancyAlert('Request submitted!\n'+coins+' coins = ₹'+inr+'\nWill be processed within 24 hours.');
+}
+
+// ════════════════════════════════════════
+// COIN HISTORY
+// ════════════════════════════════════════
+async function showPlayerHistory(){
+  document.getElementById('sideMenu').classList.remove('open');
+  if(!currentUser||!playerData){ showFancyAlert('Pehle Log In karein!'); return; }
+
+  var { data } = await sb.from('transactions').select('*').eq('player_id', playerData.player_id).order('created_at',{ascending:false}).limit(50);
+  var html='';
+  var iconMap={deposit:'💰',bonus:'🎁',invest:'🏏',win:'🏆',withdraw:'📤',refund:'🔄',jackpot:'💎'};
+  if(!data||data.length===0){ html='<p style="color:gray;text-align:center;">Koi history nahi hai.</p>'; }
+  else {
+    data.forEach(function(t){
+      var c=t.coins>=0?'#28a745':'#ff4d4d';
+      var icon=iconMap[t.type]||'•';
+      var d=new Date(t.created_at).toLocaleString('en-IN');
+      html+='<div class="pred-item"><div><div style="font-size:13px;">'+icon+' '+t.description+'</div><div style="font-size:11px;color:var(--text-muted);">'+d+'</div></div>'
+           +'<div style="color:'+c+';font-weight:bold;font-size:14px;">'+(t.coins>=0?'+':'')+t.coins+' <i class="fa-solid fa-coins" style="font-size:10px;color:var(--gold);"></i></div></div>';
+    });
+  }
+  document.getElementById('coin-history-list').innerHTML=html;
+  openModal('historyModal');
+}
+
+// ════════════════════════════════════════
+// MY PREDICTIONS
+// ════════════════════════════════════════
+async function loadMyPredictions(){
+  var el=document.getElementById('my-predictions-list');
+  if(!currentUser||!playerData){ el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:30px;">Log in to see your predictions.</p>'; return; }
+
+  var { data } = await sb.from('predictions').select('*').eq('player_id', playerData.player_id).order('created_at',{ascending:false}).limit(100);
+  if(!data||data.length===0){ el.innerHTML='<p style="color:gray;text-align:center;padding:20px;">Koi prediction nahi hai abhi.</p>'; return; }
+
+  var html='';
+  data.forEach(function(p,i){
+    var statusColor = p.result==='win'?'#28a745':p.result==='lose'?'#ff4d4d':'#ffcc00';
+    var statusText  = p.result==='win'?'✅ WON':p.result==='lose'?'❌ LOST':'⏳ PENDING';
+    var d=new Date(p.created_at).toLocaleString('en-IN');
+    html+='<div class="pred-item" style="flex-direction:column;align-items:flex-start;gap:6px;">'
+         +'<div style="display:flex;justify-content:space-between;width:100%;">'
+         +'<span style="font-size:11px;color:var(--text-muted);">Prediction #'+(i+1)+' &nbsp;|&nbsp; '+d+'</span>'
+         +'<span style="color:'+statusColor+';font-weight:bold;font-size:12px;">'+statusText+'</span>'
+         +'</div>'
+         +'<div style="font-size:13px;"><b>'+p.match_name+'</b></div>'
+         +'<div style="font-size:12px;color:var(--text-muted);">'
+         +'T1: '+p.t1_runs+' runs / '+p.t1_wickets+' wkts &nbsp;|&nbsp; T2: '+p.t2_runs+' runs / '+p.t2_wickets+' wkts'
+         +'</div>'
+         +'<div style="font-size:13px;"><span class="coin-badge"><i class="fa-solid fa-coins"></i> '+p.coins_invested+' invested</span>'
+         +(p.result==='win'?' &nbsp;<span class="coin-badge" style="background:#1a3015;color:#28a745;"><i class="fa-solid fa-coins"></i> +'+p.coins_won+' won</span>':'')+'</div>'
+         +'</div>';
+  });
+  el.innerHTML=html;
+}
+// 1. Mode badalne wala function
+async function toggleDataSource() {
+    const btn = document.getElementById('toggle-source-btn');
+    
+    // Pehle current mode check karo
+    let { data } = await sb.from('site_settings').select('data_source').eq('id', 1).single();
+    let newMode = (data.data_source === 'api') ? 'manual' : 'api';
+
+    // Database update karo
+    const { error } = await sb.from('site_settings').update({ data_source: newMode }).eq('id', 1);
+
+    if (!error) {
+        showFancyAlert(`Site ab ${newMode.toUpperCase()} mode par hai!`);
+        updateSourceButtonUI(newMode);
+        updateLiveCricketData(); // Refresh data immediately
+    }
+}
+
+// 2. Button ka text update karne ke liye
+function updateSourceButtonUI(mode) {
+    const btn = document.getElementById('toggle-source-btn');
+    if(!btn) return;
+    if (mode === 'api') {
+        btn.innerHTML = '<i class="fas fa-satellite"></i> Mode: LIVE API';
+        btn.style.background = '#00bcd4';
+    } else {
+        btn.innerHTML = '<i class="fas fa-user-cog"></i> Mode: MANUAL (Admin)';
+        btn.style.background = '#ff5722';
+    }
+}
+
+
+
+const updateLiveCricketDataGraph = `
+graph TD
+  A[Start updateLiveCricketData] --> B{mode == manual?}
+  B -- yes --> C[fetch live_match from Supabase]
+  C --> D{adminMatch exists?}
+  D -- yes --> E[renderLiveMatch(adminMatch)]
+  D -- no --> F[continue to API fallback]
+  B -- no --> G[fetch CricAPI currentMatches]
+  G --> H{response status OK?}
+  H -- yes --> I[render IPL matches]
+  H -- no --> J[rotateKey if 403/429/406]
+  J --> K[fallback to admin or schedule card]
+  K --> L[render fallback UI]
+`;
+
+async function updateLiveCricketData() {
+    var container = document.getElementById('ipl-matches-container');
+    if (!container) return;
+
+    // Bug flow graph saved in updateLiveCricketDataGraph
+
+    try {
+        // 1. SABSE PEHLE: Check karo admin ne kaunsa mode set kiya hai (Settings table se)
+        let { data: settings } = await sb.from('site_settings').select('data_source').eq('id', 1).single();
+        const mode = settings ? settings.data_source : 'api';
+
+        // 2. AGAR MANUAL MODE HAI: Toh direct Supabase (Admin) se uthao
+        if (mode === 'manual') {
+            console.log("Manual Mode Active. Fetching from DB...");
+            let { data: adminMatch } = await sb.from('live_match').select('*').eq('is_active', true).eq('id', 1).single();
+            if (adminMatch) {
+                container.innerHTML = ""; // Purana kachra saaf
+                renderLiveMatch(adminMatch);
+                return; // Yahin ruk jao
+            }
+        }
+
+        // 3. AGAR API MODE HAI: Toh API try karo
+        console.log("API Mode Active. Fetching from CricAPI...");
+        const apiUrl = 'https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey() + '&offset=0';
+        const apiOpts = {
+            mode: 'cors'
+        };
+
+        var res = await fetchWithTimeout(apiUrl, apiOpts, API_FETCH_TIMEOUT_MS);
+        if ((!res || !res.ok) && res && [429, 403, 406].includes(res.status)) {
+            rotateKey();
+            console.log('Retrying CricAPI with rotated key...');
+            res = await fetchWithTimeout(
+                'https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey() + '&offset=0',
+                apiOpts,
+                API_FETCH_TIMEOUT_MS
+            );
+        }
+
+        if (!res || !res.ok) {
+            throw new Error('API response failed: ' + (res ? res.status + ' ' + res.statusText : 'No response'));
+        }
+
+        var json = await res.json();
+        if (!json || !json.data) { throw new Error('No data'); }
+
+        var ipl = json.data.filter(function(m) {
+            return m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE');
+        });
+
+        if (ipl.length > 0) {
+            container.innerHTML = ""; // Clear for API results
+            liveMatchData = null;
+            renderIPLMatches(ipl);
+        } else {
+            // Agar API par koi match nahi hai toh empty state dikhao
+            container.innerHTML = `
+                <div style="text-align:center;padding:20px;color:var(--text-muted);">
+                    <p>🏏 Abhi koi IPL match live nahi hai</p>
+                    <p style="font-size:12px;">Match start hone par yahan show hoga</p>
+                </div>`;
+        }
+
+    } catch (e) {
+        console.error("Fetch Error:", e);
+        // FALLBACK: Agar API fail ho jaye toh emergency mein Admin data dikhao
+        let { data: fallbackMatch } = await sb.from('live_match').select('*').eq('is_active', true).eq('id', 1).single();
+        if (fallbackMatch) {
+            container.innerHTML = "";
+            renderLiveMatch(fallbackMatch);
+        } else {
+            var nextMatchHtml = '';
+            if (typeof iplSchedule !== 'undefined' && Array.isArray(iplSchedule) && iplSchedule.length > 0) {
+                var nextMatch = iplSchedule[0];
+                var matchTime = new Date(nextMatch.date).toLocaleString('en-IN', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+                nextMatchHtml = `<p style="margin:0.5rem 0 0 0; font-size:14px; color:#cddc39;">Next IPL match: <strong>${nextMatch.t1} vs ${nextMatch.t2}</strong><br>${matchTime}</p>`;
+            }
+            container.innerHTML = `
+                <div style="text-align:center;padding:20px;">
+                    <p style="color:orange;font-weight:bold;">⚠️ Live data load nahi hua</p>
+                    ${nextMatchHtml}
+                    <button onclick="openModal('adminModal')" style="margin-top:15px;padding:10px 15px;background:red;color:white;border:none;border-radius:5px;cursor:pointer;">
+                        Set Match Manually (Admin)
+                    </button>
+                </div>`;
+        }
+    }
+}
+
+async function syncAPI(){ await updateLiveCricketData(); showFancyAlert('API synced!'); }
+
+
+// ════════════════════════════════════════
+function renderIPLMatches(matches){
+  renderLiveMatchFromAPI(matches[0], 0);
+}
+
+function renderLiveMatchFromAPI(match, index){
+  var s1='—',s2='—';
+  if(match.score&&match.score[0]) s1=match.score[0].r+'/'+match.score[0].w+' ('+match.score[0].o+' ov)';
+  if(match.score&&match.score[1]) s2=match.score[1].r+'/'+match.score[1].w+' ('+match.score[1].o+' ov)';
+  var t1=match.teams[0]||'Team 1';
+  var t2=match.teams[1]||'Team 2';
+ let currentOver = match.score && match.score[0] 
+  ? Math.floor(match.score[0].o) 
+  : 0;
+
+var obj={
+  t1,t2,s1,s2,
+  name:match.name,
+  status:match.status,
+  over: currentOver
+};
+  renderLiveMatch(obj, index);
+  checkOverChange(currentOver);
+}
+
+function renderLiveMatch(match, index){
+  index = index||0;
+  var container=document.getElementById('ipl-matches-container');
+  var t1=match.t1||match.teams&&match.teams[0]||'Team 1';
+  var t2=match.t2||match.teams&&match.teams[1]||'Team 2';
+  var s1=match.s1||'—', s2=match.s2||'—';
+
+      // --- NAYA LOGIC: SCORE SE OVER READ KAREGA ---
+      var matchOverData = s1.match(/\((\d+)\.(\d+)/) || s2.match(/\((\d+)\.(\d+)/);
+      var currentRunningOver = 0;
+
+      if(matchOverData){
+          var oversCompleted = parseInt(matchOverData[1]); // Example: 18
+          var balls = parseInt(matchOverData[2]);          // Example: 4
+          
+          // Agar 18.4 hai, matlab 19va over chal raha hai
+          currentRunningOver = oversCompleted + 1;         
+      } else {
+          currentRunningOver = match.current_over || match.over || 1;
+      }
+
+      // Agar 19va over chal raha hai, toh bet agle (20ve) over ki lagegi
+      var predictionOver = currentRunningOver + 1;
+      if (predictionOver > 20) predictionOver = 20; // 20 over ki limit
+      // --- NAYA LOGIC KHATAM ---
+
+      var wkOpts='';
+  for(var w=1;w<=10;w++) wkOpts+='<option value="'+w+'">'+w+'</option>';
+
+  container.innerHTML='';
+  var div=document.createElement('div');
+  div.style.cssText='width:100%;margin-bottom:25px;';
+  div.innerHTML=
+    // SCOREBOARD
+    '<div style="background:white;border-radius:12px 12px 0 0;padding:18px;border:1px solid #ddd;border-bottom:none;color:#000;">'
+   +'  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #eee;padding-bottom:10px;margin-bottom:12px;">'
+   +'    <div style="display:flex;align-items:center;gap:8px;">'
+   +'      <img src="IND.png" style="height:20px;" onerror="this.style.display=\'none\'">'
+   +'      <span style="font-weight:800;font-size:0.95rem;color:#333;">🏆 '+match.name+'</span>'
+   +'    </div>'
+   +'    <span style="background:#ff0000;color:#fff;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:0.85rem;animation:pulse 1s infinite;">● LIVE</span>'
+   +'  </div>'
+   +'  <div style="display:flex;justify-content:space-around;align-items:center;text-align:center;">'
+   +'    <div style="flex:1;">'
+   +'      <img src="'+teamLogo(t1)+'" style="height:50px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
+   +'      <div style="font-size:1rem;font-weight:900;color:#222;">'+t1+'</div>'
+   +'      <div style="font-size:1.4rem;font-weight:700;color:#d32f2f;">'+s1+'</div>'
+   +'    </div>'
+   +'    <div style="font-weight:900;color:#ccc;font-size:1.3rem;padding:0 15px;">VS</div>'
+   +'    <div style="flex:1;">'
+   +'      <img src="'+teamLogo(t2)+'" style="height:50px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
+   +'      <div style="font-size:1rem;font-weight:900;color:#222;">'+t2+'</div>'
+   +'      <div style="font-size:1.4rem;font-weight:700;color:#d32f2f;">'+s2+'</div>'
+   +'    </div>'
+   +'  </div>'
+   +'  <div style="text-align:center;color:#d32f2f;font-size:0.85rem;margin-top:10px;font-weight:bold;">'+(match.status||'')+'</div>'
+   +'</div>'
+   // GAME PANELS
+   +'<div style="display:flex;flex-wrap:wrap;width:100%;border:3px solid #0a0a1a;border-radius:0 0 12px 12px;overflow:hidden;">'
+   // JACKPOT PANEL (Neon Style)
+    +'<div class="jackpot-container" style="flex:1.5;min-width:280px; margin: 10px;">'
+    +    '<div class="jackpot-header">💎 JACKPOT — WIN ₹1,00,00,000</div>'
+    +    '<div class="jackpot-body">'
+    +        '<p class="jackpot-subtitle">Over '+predictionOver+' ka result predict karo — ₹99 coins</p>'
+    +        '<div class="jackpot-grid">'
+    +            '<div class="jackpot-item"><label>Over</label><div id="jp-over-'+index+'" class="neon-box highlight-box">'+predictionOver+'</div></div>'
+    +            '<div class="jackpot-item"><label>Runs</label><input type="number" id="jp-run-'+index+'" class="neon-input" min="0" max="36" placeholder="0"></div>'
+    +            '<div class="jackpot-item"><label>6s</label><input type="number" id="jp-six-'+index+'" class="neon-input" min="0" max="6" placeholder="0"></div>'
+    +            '<div class="jackpot-item"><label>4s</label><input type="number" id="jp-four-'+index+'" class="neon-input" min="0" max="6" placeholder="0"></div>'
+    +            '<div class="jackpot-item action-item"><button id="jp-invest-btn-'+index+'" class="neon-btn" onclick="placeJackpot('+index+')">99 <i class="fas fa-coins"></i></button></div>'
+    +        '</div>'
+    +    '</div>'
+    +'</div>'
+   
+   +'    <div id="jp-result-container-'+index+'" style="display:none; padding:12px; background:#020a05; margin:0 12px 12px 12px; border-radius:8px; border:1px dashed #00e676;">'
+   +'      <div style="text-align:center; color:#00e676; font-weight:bold; font-size:0.8rem; margin-bottom:8px;">OVER RESULT</div>'
+   +'      <table style="width:100%; color:#fff; text-align:center; font-size:0.85rem; border-collapse: collapse;">'
++'        <thead>'
++'          <tr style="color:#00bcd4; padding:4px; font-weight:normal;"><th>Type</th><th>Runs</th><th>6s</th><th>4s</th></tr>'
++'        </thead>'
++'        <tbody id="jp-guesses-body-'+index+'">'
++'          '
++'        </tbody>'
++'        <tbody>'
++'          <tr style="background:rgba(0,230,118,0.1); border-top: 2px solid #00e676;"><td style="padding:6px 0; font-weight:bold;">Actual Result</td><td id="jp-act-run-'+index+'">-</td><td id="jp-act-six-'+index+'">-</td><td id="jp-act-four-'+index+'">-</td></tr>'
++'        </tbody>'
++'      </table>'
+   +'      <div id="jp-win-status-'+index+'" style="text-align:center; margin-top:8px; font-weight:bold;"></div>'
+   +'    </div>'
+   +'  </div>'
+   +'  <div class="predict-panel" style="flex:1;min-width:260px;">'
+   +'    <div class="predict-header">🏏 PREDICT MATCH SCORE &amp; WIN</div>'
+   +'    <div style="display:flex;padding:12px;gap:8px;background:#fff;">'
+   // Team 1
+   +'      <div style="flex:1;text-align:center;">'
+   +'        <img src="'+teamLogo(t1)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
+   +'        <div style="color:#28a745;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t1+'</div>'
+   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
+   +'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
+   +'          <input type="number" id="t1-run-base-'+index+'" placeholder="Runs" oninput="updateRunTarget('+index+',\'t1\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
+   +'          <input type="number" id="t1-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
+   +'        </div>'
+   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
+   +'        <select id="t1-wicket-'+index+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
+   +'      </div>'
+   // Team 2
+   +'      <div style="flex:1;text-align:center;">'
+   +'        <img src="'+teamLogo(t2)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
+   +'        <div style="color:#007bff;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t2+'</div>'
+   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
+   +'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
+   +'          <input type="number" id="t2-run-base-'+index+'" placeholder="Runs" oninput="updateRunTarget('+index+',\'t2\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
+   +'          <input type="number" id="t2-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
+   +'        </div>'
+   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
+   +'        <select id="t2-wicket-'+index+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
+   +'      </div>'
+   +'    </div>'
+   +'    <div style="padding:15px;background:#1a1a2e;">'
+   +'      <div style="display:flex;gap:10px;width:90%;margin:0 auto;">'
+   +'        <input type="number" id="invest-amount-'+index+'" placeholder="Coins (min 10)" style="flex:1;padding:10px;text-align:center;font-weight:bold;border-radius:6px;border:none;outline:none;">'
+   +'        <button id="invest-btn-'+index+'" onclick="placePrediction('+index+')" style="flex:1;padding:10px;background:#28a745;color:white;border:none;font-weight:bold;border-radius:6px;cursor:pointer;">INVEST <i class=\'fa-solid fa-coins\'></i></button>'
+   +'      </div>'
+   +'      <p style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;">Correct prediction = 2x coins back!</p>'
+   +'    </div>'
+   +'  </div>'
+   +'</div>';
+  container.appendChild(div);
+}
+
+// UPCOMING MATCHES — UPDATED SCHEDULE
+// ════════════════════════════════════════
+var iplSchedule = [
+  { date: "2026-05-12T19:30:00", t1: "Gujarat Titans", t2: "Sunrisers Hyderabad" },
+  { date: "2026-05-13T19:30:00", t1: "Royal Challengers Bangalore", t2: "Kolkata Knight Riders" },
+  { date: "2026-05-14T19:30:00", t1: "Punjab Kings", t2: "Mumbai Indians" },
+  { date: "2026-05-15T19:30:00", t1: "Lucknow Super Giants", t2: "Chennai Super Kings" },
+  { date: "2026-05-16T19:30:00", t1: "Kolkata Knight Riders", t2: "Gujarat Titans" },
+  { date: "2026-05-17T15:30:00", t1: "Punjab Kings", t2: "Royal Challengers Bangalore" },
+  { date: "2026-05-17T19:30:00", t1: "Delhi Capitals", t2: "Rajasthan Royals" },
+  { date: "2026-05-18T19:30:00", t1: "Chennai Super Kings", t2: "Sunrisers Hyderabad" },
+  { date: "2026-05-19T19:30:00", t1: "Rajasthan Royals", t2: "Lucknow Super Giants" },
+  { date: "2026-05-20T19:30:00", t1: "Kolkata Knight Riders", t2: "Mumbai Indians" },
+  { date: "2026-05-21T19:30:00", t1: "Gujarat Titans", t2: "Chennai Super Kings" },
+  { date: "2026-05-22T19:30:00", t1: "Sunrisers Hyderabad", t2: "Royal Challengers Bangalore" },
+  { date: "2026-05-23T19:30:00", t1: "Lucknow Super Giants", t2: "Punjab Kings" },
+  { date: "2026-05-24T15:30:00", t1: "Mumbai Indians", t2: "Rajasthan Royals" },
+  { date: "2026-05-24T19:30:00", t1: "Kolkata Knight Riders", t2: "Delhi Capitals" },
+  { date: "2026-05-26T19:30:00", t1: "Qualifier 1", t2: "TBD" },
+  { date: "2026-05-27T19:30:00", t1: "Eliminator", t2: "TBD" },
+  { date: "2026-05-29T19:30:00", t1: "Qualifier 2", t2: "TBD" },
+  { date: "2026-05-31T19:30:00", t1: "Final", t2: "TBD" }
+];
+
+
+function updateUpcomingMatches(){
+  var el=document.getElementById('upcoming-matches-list');
+  if(!el) return;
+  var now=new Date();
+  var upcoming=iplSchedule.filter(function(m){ return new Date(m.date)>new Date(now.getTime()-3600000); }).slice(0,4);
+  if(upcoming.length===0){ el.innerHTML='<p style="color:gray;text-align:center;padding:20px;">No upcoming matches.</p>'; return; }
+  el.innerHTML='';
+  upcoming.forEach(function(match,idx){
+    var d=new Date(match.date);
+    var day=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+    var time=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    var wkOpts=''; for(var w=1;w<=10;w++) wkOpts+='<option value="'+w+'">'+w+'</option>';
+    var wrapper=document.createElement('div');
+    wrapper.style.cssText='display:flex;flex-direction:column;gap:8px;width:100%;';
+    wrapper.innerHTML=
+      '<div style="background:#15304b;border-radius:12px;padding:16px;border:1px solid #1a3c5e;">'
+     +'  <div style="text-align:center;color:#a0b2c6;font-size:0.8rem;margin-bottom:12px;border-bottom:1px solid #1a3c5e;padding-bottom:8px;">📅 '+day+' &nbsp;|&nbsp; ⏰ '+time+' IST</div>'
+     +'  <div style="display:flex;justify-content:space-between;align-items:center;">'
+     +'    <div style="text-align:center;width:44%;">'
+     +'      <img src="'+teamPhoto(match.t1)+'" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" onerror="this.style.display=\'none\'">'
+     +'      <img src="'+teamLogo(match.t1)+'" style="height:30px;display:block;margin:0 auto 4px;" onerror="this.style.display=\'none\'">'
+     +'      <div style="color:white;font-weight:bold;font-size:0.7rem;">'+match.t1+'</div>'
+     +'    </div>'
+     +'    <div style="font-weight:bold;color:#ffcc00;font-size:1.2rem;">VS</div>'
+     +'    <div style="text-align:center;width:44%;">'
+     +'      <img src="'+teamPhoto(match.t2)+'" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" onerror="this.style.display=\'none\'">'
+     +'      <img src="'+teamLogo(match.t2)+'" style="height:30px;display:block;margin:0 auto 4px;" onerror="this.style.display=\'none\'">'
+     +'      <div style="color:white;font-weight:bold;font-size:0.7rem;">'+match.t2+'</div>'
+     +'    </div>'
+     +'  </div>'
+     +'</div>'
+     // PREDICTION BOX
+     +'<div style="background:white;border-radius:10px;border:3px solid #111;overflow:hidden;">'
+     +'  <div style="background:#111;color:white;text-align:center;padding:8px;font-weight:bold;font-size:0.85rem;">🏆 Predict Score &amp; Win 2x Coins</div>'
+     +'  <div style="display:flex;width:100%;">'
+     +'    <div style="flex:1;padding:10px;text-align:center;border-right:2px solid #ddd;background:#f8f9fa;">'
+     +'      <div style="color:#28a745;font-weight:800;margin-bottom:6px;font-size:0.75rem;">'+match.t1+'</div>'
+     +'      <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
+     +'      <div style="display:flex;justify-content:center;margin-bottom:8px;">'
+     +'        <input type="number" id="u-t1-run-'+idx+'" placeholder="Runs" oninput="updateRunTarget2('+idx+',\'t1\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;">'
+     +'        <input type="number" id="u-t1-target-'+idx+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;">'
+     +'      </div>'
+     +'      <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
+     +'      <select id="u-t1-wicket-'+idx+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
+     +'    </div>'
+     +'    <div style="flex:1;padding:10px;text-align:center;background:#f8f9fa;">'
+     +'      <div style="color:#007bff;font-weight:800;margin-bottom:6px;font-size:0.75rem;">'+match.t2+'</div>'
+     +'      <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
+     +'      <div style="display:flex;justify-content:center;margin-bottom:8px;">'
+     +'        <input type="number" id="u-t2-run-'+idx+'" placeholder="Runs" oninput="updateRunTarget2('+idx+',\'t2\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;">'
+     +'        <input type="number" id="u-t2-target-'+idx+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;">'
+     +'      </div>'
+     +'      <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
+     +'      <select id="u-t2-wicket-'+idx+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
+     +'    </div>'
+     +'  </div>'
+     +'  <div style="background:#111;padding:12px;display:flex;justify-content:center;">'
+     +'    <div style="display:flex;gap:10px;width:85%;">'
+     +'      <input type="number" id="u-invest-amount-'+idx+'" placeholder="Coins (min 10)" style="flex:1;padding:10px;text-align:center;font-weight:bold;border-radius:6px;border:none;outline:none;">'
+     +'      <button id="u-invest-btn-'+idx+'" onclick="placeUpcomingPrediction(\''+match.t1+'\',\''+match.t2+'\','+idx+')" style="flex:1;padding:10px;background:#28a745;color:white;border:none;font-weight:bold;border-radius:6px;cursor:pointer;">INVEST</button>'
+     +'    </div>'
+     +'  </div>'
+     +'</div>';
+    el.appendChild(wrapper);
+  });
+}
+
+// ════════════════════════════════════════
+// ENDED MATCHES (History from Supabase)
+// ════════════════════════════════════════
+async function loadEndedMatches(){
+  var el=document.getElementById('ended-matches-list');
+  var { data } = await sb.from('ended_matches').select('*').order('ended_at',{ascending:false}).limit(20);
+  if(!data||data.length===0){
+    el.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Koi ended match nahi hai abhi.</p>';
+    return;
+  }
+  var html='';
+  data.forEach(function(m){
+    var d=new Date(m.ended_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+    html+='<div class="live-card" style="border-left:4px solid var(--blue);opacity:0.9;">'
+         +'  <div class="live-header"><span><i class="fa-solid fa-calendar-check"></i> '+d+'</span><span style="color:var(--blue);font-weight:bold;">Completed</span></div>'
+         +'  <div style="margin-bottom:8px;">'
+         +'    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">'
+         +'      <img src="'+teamLogo(m.t1)+'" style="height:20px;" onerror="this.style.display=\'none\'">'
+         +'      <span style="font-size:13px;'+(m.winner===m.t1?'font-weight:900;color:white;':'color:var(--text-muted);')+'">'+m.t1+' ('+m.s1+')</span>'
+         +'    </div>'
+         +'    <div style="display:flex;align-items:center;gap:8px;">'
+         +'      <img src="'+teamLogo(m.t2)+'" style="height:20px;" onerror="this.style.display=\'none\'">'
+         +'      <span style="font-size:13px;'+(m.winner===m.t2?'font-weight:900;color:white;':'color:var(--text-muted);')+'">'+m.t2+' ('+m.s2+')</span>'
+         +'    </div>'
+         +'  </div>'
+         +'  <div style="font-size:12px;color:var(--green);text-align:right;font-weight:bold;">'+m.result+'</div>'
+         +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+// ════════════════════════════════════════
+// RUN TARGET (+20 auto-fill)
+// ════════════════════════════════════════
+function updateRunTarget(index, prefix){
+  var b=document.getElementById(prefix+'-run-base-'+index);
+  var t=document.getElementById(prefix+'-run-target-'+index);
+  if(b&&t){ var v=parseInt(b.value); t.value=(!isNaN(v)&&v>=0)?v+20:''; }
+}
+function updateRunTarget2(index, prefix){
+  var b=document.getElementById('u-'+prefix+'-run-'+index);
+  var t=document.getElementById('u-'+prefix+'-target-'+index);
+  if(b&&t){ var v=parseInt(b.value); t.value=(!isNaN(v)&&v>=0)?v+20:''; }
+}
+// ════════════════════════════════════════
+async function placePrediction(index){
+  if(!currentUser||!playerData){ showFancyAlert('Pehle Log In karein!'); return; }
+
+  var t1r=document.getElementById('t1-run-base-'+index);
+  var t1w=document.getElementById('t1-wicket-'+index);
+  var t2r=document.getElementById('t2-run-base-'+index);
+  var t2w=document.getElementById('t2-wicket-'+index);
+  var amt=document.getElementById('invest-amount-'+index);
+
+  if(!t1r.value||!t1w.value||!t2r.value||!t2w.value){ showFancyAlert('Dono teams ke Runs aur Wickets bharein!'); return; }
+
+  var coins=parseInt(amt.value)||0;
+  if(coins<10){ showFancyAlert('Minimum 10 coins invest karein!'); return; }
+  if(coins>playerData.coins){ showFancyAlert('Insufficient coins!\nBuy more coins to continue.'); return; }
+
+  var matchName = document.querySelector('#ipl-matches-container span[style*="font-weight:800"]');
+  var mName = matchName ? matchName.innerText.replace('🏆 ','') : 'IPL 2026 Live Match';
+
+  // Save prediction to Supabase (unlimited — each saves separately)
+  var { error } = await sb.from('predictions').insert({
+    player_id: playerData.player_id,
+    player_name: playerData.name,
+    match_name: mName,
+    match_type: 'live',
+    t1_runs: parseInt(t1r.value),
+    t1_wickets: parseInt(t1w.value),
+    t2_runs: parseInt(t2r.value),
+    t2_wickets: parseInt(t2w.value),
+    coins_invested: coins,
+    coins_won: 0,
+    result: 'pending',
+    created_at: new Date().toISOString()
+  });
+  if(error){ showFancyAlert('Error: '+error.message); return; }
+
+  // Deduct coins
+  await sb.from('players').update({coins: playerData.coins - coins}).eq('player_id', playerData.player_id);
+  await sb.from('transactions').insert({
+    player_id: playerData.player_id, type:'invest', coins:-coins,
+    description:'Prediction: '+mName, created_at:new Date().toISOString()
+  });
+
+  playerData.coins -= coins;
+  updateBalanceUI();
+
+  // Reset inputs (don't lock — allow multiple predictions)
+  t1r.value=''; t1w.value=''; t2r.value=''; t2w.value=''; amt.value='';
+  // Reset targets
+  var t1rt=document.getElementById('t1-run-target-'+index); if(t1rt) t1rt.value='';
+  var t2rt=document.getElementById('t2-run-target-'+index); if(t2rt) t2rt.value='';
+
+  showFancyAlert('Prediction #'+Date.now().toString().slice(-4)+' Locked!\n'+coins+' coins invested.\nSahi hua toh 2x coins milenge! 🎉\n\nAur prediction laga sakte hain!');
+}
+
+// ════════════════════════════════════════
+// PLACE PREDICTION — UPCOMING
+// ════════════════════════════════════════
+async function placeUpcomingPrediction(t1name, t2name, idx){
+  if(!currentUser||!playerData){ showFancyAlert('Pehle Log In karein!'); return; }
+
+  var t1r=document.getElementById('u-t1-run-'+idx);
+  var t1w=document.getElementById('u-t1-wicket-'+idx);
+  var t2r=document.getElementById('u-t2-run-'+idx);
+  var t2w=document.getElementById('u-t2-wicket-'+idx);
+  var amt=document.getElementById('u-invest-amount-'+idx);
+
+  if(!t1r.value||!t1w.value||!t2r.value||!t2w.value){ showFancyAlert('Dono teams ke Runs aur Wickets bharein!'); return; }
+
+  var coins=parseInt(amt.value)||0;
+  if(coins<10){ showFancyAlert('Minimum 10 coins invest karein!'); return; }
+  if(coins>playerData.coins){ showFancyAlert('Insufficient coins!'); return; }
+
+  var { error } = await sb.from('predictions').insert({
+    player_id: playerData.player_id,
+    player_name: playerData.name,
+    match_name: t1name+' vs '+t2name,
+    match_type: 'upcoming',
+    t1_runs: parseInt(t1r.value),
+    t1_wickets: parseInt(t1w.value),
+    t2_runs: parseInt(t2r.value),
+    t2_wickets: parseInt(t2w.value),
+    coins_invested: coins,
+    coins_won: 0,
+    result: 'pending',
+    created_at: new Date().toISOString()
+  });
+  if(error){ showFancyAlert('Error: '+error.message); return; }
+
+  await sb.from('players').update({coins: playerData.coins - coins}).eq('player_id', playerData.player_id);
+  await sb.from('transactions').insert({
+    player_id: playerData.player_id, type:'invest', coins:-coins,
+    description:'Prediction: '+t1name+' vs '+t2name, created_at:new Date().toISOString()
+  });
+
+  playerData.coins -= coins;
+  updateBalanceUI();
+  t1r.value=''; t1w.value=''; t2r.value=''; t2w.value=''; amt.value='';
+  var t1rt=document.getElementById('u-t1-target-'+idx); if(t1rt) t1rt.value='';
+  var t2rt=document.getElementById('u-t2-target-'+idx); if(t2rt) t2rt.value='';
+
+  showFancyAlert('Prediction Locked!\n'+coins+' coins invested.\nSahi hua toh 2x coins milenge! 🎉\n\nAur prediction laga sakte hain!');
+}
+
+// ════════════════════════════════════════
+// JACKPOT
+// ════════════════════════════════════════
+async function placeJackpot(index){
+  if(!currentUser||!playerData){ showFancyAlert('Jackpot khelne ke liye Log In karein!'); return; }
+
+  var pRun=document.getElementById('jp-run-'+index);
+  var pSix=document.getElementById('jp-six-'+index);
+  var pFour=document.getElementById('jp-four-'+index);
+  var btn=document.getElementById('jp-invest-btn-'+index);
+  var overEl=document.getElementById('jp-over-'+index);
+  var resultBox=document.getElementById('jp-result-container-'+index);
+  var winStatusEl=document.getElementById('jp-win-status-'+index);
+
+  if(!pRun.value||!pSix.value||!pFour.value){ showFancyAlert('Runs, Sixes aur Fours ke dibbe bhariye!'); return; }
+  if(playerData.coins<99){ showFancyAlert('Jackpot ke liye 99 coins chahiye!\nBuy coins to continue.'); return; }
+  if(!overEl){ showFancyAlert('Jackpot panel load nahi hua. Page refresh karein.'); return; }
+
+  var currentOverNumber = overEl.innerText;
+
+  // 1. TEMPORARY DISABLE BUTTON (Taki double click na ho)
+  if(btn){
+    btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-top-color:#000;margin:0 auto;"></div>';
+    btn.disabled=true;
+    btn.style.background='#aaa';
+  }
+
+  // Payload for Supabase
+  var jackpotPayload = {
+    player_id: playerData.player_id,
+    player_name: playerData.name,
+    over_number: parseInt(currentOverNumber),
+    predicted_runs: parseInt(pRun.value),
+    predicted_sixes: parseInt(pSix.value),
+    predicted_fours: parseInt(pFour.value),
+    result: 'pending',
+    created_at: new Date().toISOString()
+  };
+
+  // Insert into Database
+  var { data: jackpotRow, error: jackpotErr } = await sb.from('jackpot_predictions').insert(jackpotPayload).select('id').single();
+  
+  if(jackpotErr){ 
+    if(btn) { btn.innerHTML='99 <i class="fas fa-coins"></i>'; btn.disabled=false; btn.style.background='#00ff88'; }
+    showFancyAlert('Error: '+jackpotErr.message); 
+    return; 
+  }
+
+  // Deduct Coins
+  var { error: playerErr } = await sb.from('players').update({coins: playerData.coins-99}).eq('player_id', playerData.player_id);
+  
+  var { error: txErr } = await sb.from('transactions').insert({
+    player_id: playerData.player_id, type:'jackpot', coins:-99,
+    description:'Jackpot prediction — Over ' + currentOverNumber,
+    created_at: new Date().toISOString()
+  });
+
+  playerData.coins -= 99;
+  updateBalanceUI();
+
+  // 2. UI UPDATE LOGIC (Multiple Guesses Stacking)
+  if(resultBox) resultBox.style.display='block';
+  
+  var guessBody = document.getElementById('jp-guesses-body-'+index);
+  var guessCount = guessBody ? (guessBody.children.length + 1) : 1; // Count current guesses
+
+  if(guessBody) {
+    var newRow = document.createElement('tr');
+    newRow.style.background = 'rgba(0,188,212,0.15)';
+    newRow.style.borderBottom = '1px solid rgba(0,229,255,0.2)';
+    
+    // Yahan aayega "Over X Guess Y"
+    newRow.innerHTML = 
+      '<td style="padding:6px 0; color:#00e5ff; font-size:0.75rem; font-weight:bold;">Over ' + currentOverNumber + ' Guess ' + guessCount + '</td>' +
+      '<td>' + pRun.value + '</td>' +
+      '<td>' + pSix.value + '</td>' +
+      '<td>' + pFour.value + '</td>';
+      
+    guessBody.appendChild(newRow);
+  }
+
+  if(winStatusEl) winStatusEl.innerHTML="<span style='color:orange;'><i class='fa-solid fa-spinner fa-spin'></i> Over " + currentOverNumber + " result ka wait karein...</span>";
+
+  // 3. RE-ENABLE BUTTON & CLEAR INPUTS (Zaroori Kadam)
+  if(btn){
+    btn.innerHTML='99 <i class="fas fa-coins"></i>';
+    btn.disabled=false;
+    btn.style.background='#00ff88';
+  }
+  
+  // Dibbe khali karein taaki player naya guess type kar sake
+  pRun.value = '';
+  pSix.value = '';
+  pFour.value = '';
+
+  showFancyAlert('Jackpot Guess #' + guessCount + ' Locked! 99 coins deducted.\n👉 Aap chaho toh ek aur combination try kar sakte ho!');
+}
+
+function checkAdminAccess() {
+    // 1. Side Menu ko band karo (M capital match)
+    const sideMenuEl = document.getElementById('sideMenu');
+    if (sideMenuEl) {
+        sideMenuEl.classList.remove('open');
+    }
+
+    // 2. Session check karo
+    const adminSession = localStorage.getItem('isAdminLoggedIn');
+    const sessionTime = parseInt(localStorage.getItem('adminLoginTime')) || 0;
+    const now = new Date().getTime();
+
+    // 3. Agar session valid hai (24 ghante ke andar)
+    if (adminSession === 'true' && (now - sessionTime < 86400000)) {
+        console.log("Admin Session Valid. Opening Panel...");
+        setTimeout(() => { openModal('adminModal'); }, 300);
+        return;
+    }
+
+    // 4. Warna login pucho
+    showAdminLoginPopup();
+}
+
+function showAdminLoginPopup() {
+    const pass = prompt("Admin Password daalein:");
+    
+    if (pass === "nopass") {
+        // 1. Session Save karo (24 ghante ke liye)
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        localStorage.setItem('adminLoginTime', new Date().getTime());
+
+        // 2. Side Menu band karo (Spelling check: sideMenu)
+        const sideMenuEl = document.getElementById('sideMenu');
+        if (sideMenuEl) {
+            sideMenuEl.classList.remove('open');
+        }
+
+        // 3. Admin Modal kholo thode delay ke baad
+        setTimeout(() => { 
+            openModal('adminModal'); 
+            showFancyAlert('Admin Access Granted! 🔓');
+        }, 300);
+        
+    } else if (pass !== null) { // Agar Cancel nahi dabaya aur pass galat hai
+        alert("Galt Password! Kripya sahi password daalein.");
+    }
+}
+
+async function adminUpdateMatch() {
+    var tour = document.getElementById('adminTour').value;
+    var t1 = document.getElementById('adminT1').value.trim();
+    var t2 = document.getElementById('adminT2').value.trim();
+    var s1 = document.getElementById('adminS1').value.trim(); // Match HTML ID exactly
+    var s2 = document.getElementById('adminS2').value.trim(); // Match HTML ID exactly
+    var status = document.getElementById('adminStatus').value.trim();
+    var over = parseInt(document.getElementById('adminOver').value) || 1;
+
+    if (!t1 || !t2) { showFancyAlert('Team names dalein!'); return; }
+
+    // Upsert into live_match table
+    var { error } = await sb.from('live_match').upsert({
+        id: 1, 
+        name: tour + ': ' + t1 + ' vs ' + t2,
+        t1: t1, 
+        t2: t2, 
+        s1: s1, 
+        s2: s2, 
+        status: status,
+        current_over: over,
+        is_active: true,
+        updated_at: new Date().toISOString()
+    });
+
+    if (error) { 
+        console.error("Supabase Error:", error);
+        showFancyAlert('DB Error: ' + error.message); 
+        return; 
+    }
+
+    await updateLiveCricketData();
+    showFancyAlert('Live match updated!');
+    closeModal('adminModal');
+}
+
+async function adminSubmitOverResult(){
+  var overNo=parseInt(document.getElementById('resultOver').value);
+  var runs=parseInt(document.getElementById('resultRuns').value);
+  var sixes=parseInt(document.getElementById('resultSixes').value)||0;
+  var fours=parseInt(document.getElementById('resultFours').value)||0;
+  var t1r=parseInt(document.getElementById('resultT1Runs').value)||0;
+  var t1w=parseInt(document.getElementById('resultT1Wkts').value)||0;
+  var t2r=parseInt(document.getElementById('resultT2Runs').value)||0;
+  var t2w=parseInt(document.getElementById('resultT2Wkts').value)||0;
+
+  if(!overNo||isNaN(runs)){ showFancyAlert('Over number aur runs dalein!'); return; }
+
+  var logEl=document.getElementById('over-result-log');
+  logEl.innerHTML='<div class="spinner" style="margin:0 auto;"></div>';
+
+  // 1. Check jackpot predictions for this over
+  var { data: jackpots } = await sb.from('jackpot_predictions')
+    .select('*').eq('over_number', overNo).eq('result','pending');
+
+  var winners=0;
+  if(jackpots && jackpots.length>0){
+    for(var i=0;i<jackpots.length;i++){
+      var jp=jackpots[i];
+      var isWin = jp.predicted_runs===runs && jp.predicted_sixes===sixes && jp.predicted_fours===fours;
+      await sb.from('jackpot_predictions').update({
+        result: isWin?'win':'lose',
+        actual_runs: runs, actual_sixes: sixes, actual_fours: fours
+      }).eq('id', jp.id);
+
+      if(isWin){
+        winners++;
+        // Credit jackpot winnings (10,000,000 coins = metaphorical, in real game set appropriate amount)
+        await sb.from('players').update({coins: 10000000}).eq('player_id', jp.player_id);
+        await sb.from('transactions').insert({
+          player_id: jp.player_id, type:'jackpot', coins:10000000,
+          description:'JACKPOT WIN! Over '+overNo, created_at:new Date().toISOString()
+        });
+      }
+    }
+  }
+
+  // 2. Check match predictions — compare t1/t2 scores
+  var { data: preds } = await sb.from('predictions').select('*').eq('result','pending').eq('match_type','live');
+  var predWinners=0;
+  if(preds && preds.length>0){
+    for(var j=0;j<preds.length;j++){
+      var p=preds[j];
+      // Win if runs within ±20 range (t1-run to t1-run+20 target)
+      var t1Match = p.t1_runs<=t1r && t1r<=(p.t1_runs+20) && p.t1_wickets==t1w;
+      var t2Match = p.t2_runs<=t2r && t2r<=(p.t2_runs+20) && p.t2_wickets==t2w;
+      var pWin = t1Match && t2Match;
+      var coinsWon = pWin ? p.coins_invested*2 : 0;
+      await sb.from('predictions').update({
+        result: pWin?'win':'lose',
+        coins_won: coinsWon
+      }).eq('id', p.id);
+      if(pWin){
+        predWinners++;
+        var { data:pd } = await sb.from('players').select('coins').eq('player_id',p.player_id).single();
+        if(pd){
+          await sb.from('players').update({coins: pd.coins+coinsWon}).eq('player_id',p.player_id);
+          await sb.from('transactions').insert({
+            player_id:p.player_id, type:'win', coins:coinsWon,
+            description:'Prediction WIN! 2x return', created_at:new Date().toISOString()
+          });
+        }
+      }
+    }
+  }
+
+  logEl.innerHTML='<span style="color:#28a745;">✅ Over '+overNo+' result processed!<br>'
+    +'Jackpot predictions: '+(jackpots?jackpots.length:0)+' | Winners: '+winners+'<br>'
+    +'Match predictions: '+(preds?preds.length:0)+' | Winners: '+predWinners+'</span>';
+}
+
+async function adminEndMatch(){
+  var s1=document.getElementById('end-s1').value.trim();
+  var s2=document.getElementById('end-s2').value.trim();
+  var result=document.getElementById('end-result').value.trim();
+  if(!s1||!s2||!result){ showFancyAlert('Saari details bharein!'); return; }
+
+  
+  var { data: lm } = await sb.from('live_match').select('*').eq('is_active',true).single();
+  if(!lm){ showFancyAlert('Koi active match nahi hai!'); return; }
+
+  // Move to ended_matches
+ // Move to ended_matches (Updated Logic)
+        var { error } = await sb.from('ended_matches').insert({
+            match_id: "m-" + Date.now(),
+            match_name: lm.name || (lm.t1 + " vs " + lm.t2), // ZAROORI: Ye miss tha
+            t1: lm.t1,
+            t2: lm.t2,
+            s1: s1,
+            s2: s2,
+            result: result,
+            winner: result.includes(lm.t1) ? lm.t1 : (result.includes(lm.t2) ? lm.t2 : "Draw"),
+            ended_at: new Date().toISOString()
+        });
+  if(error){ showFancyAlert('Error: '+error.message); return; }
+
+
+  await sb.from('live_match').update({is_active:false}).eq('id',1);
+
+
+  await sb.from('predictions').update({result:'expired'}).eq('result','pending');
+  await sb.from('jackpot_predictions').update({result:'expired'}).eq('result','pending');
+
+  document.getElementById('end-s1').value='';
+  document.getElementById('end-s2').value='';
+  document.getElementById('end-result').value='';
+  document.getElementById('ipl-matches-container').innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Abhi koi live match nahi hai.</p>';
+  loadEndedMatches();
+  showFancyAlert('Match ended!\n'+result+'\nHistory mein add ho gaya.');
+  closeModal('adminModal');
+}
+
+function triggerLiveNotif(){
+  var txt=document.getElementById('newNotif').value.trim();
+  if(!txt){ showFancyAlert('Text dalein!'); return; }
+  document.getElementById('notif-text').innerText=txt;
+  document.getElementById('live-notification').style.display='block';
+  document.getElementById('newNotif').value='';
+  showFancyAlert('Notification sent!');
+}
+
+async function loadAdminUsers(){
+  var search=document.getElementById('searchPlayer').value.trim().toLowerCase();
+  var el=document.getElementById('admin-user-list');
+  el.innerHTML='<div class="spinner" style="margin:20px auto;"></div>';
+  var query=sb.from('players').select('*').order('created_at',{ascending:false}).limit(50);
+  var { data } = await query;
+  if(!data||data.length===0){ el.innerHTML='<p style="color:gray;">No players yet.</p>'; return; }
+  var filtered=data.filter(function(p){
+    if(!search) return true;
+    return p.name.toLowerCase().includes(search)||p.player_id.toLowerCase().includes(search)||(p.mobile_or_email||'').includes(search);
+  });
+  var html='';
+  filtered.forEach(function(p){
+    var st=p.banned?'<span style="color:red;">Banned 🚫</span>':'<span style="color:#28a745;">Active ✅</span>';
+    var btn=p.banned
+      ?'<button onclick="adminToggleBan(\''+p.player_id+'\',false)" style="background:#28a745;color:white;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Unban</button>'
+      :'<button onclick="adminToggleBan(\''+p.player_id+'\',true)" style="background:red;color:white;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Ban</button>';
+    html+='<div style="background:#0b1c2c;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #1a3c5e;color:white;font-size:12px;">'
+         +'<b style="font-size:14px;">'+p.name+'</b> &nbsp;<span style="color:var(--gold);">#'+p.player_id+'</span><br>'
+         +'ID: '+p.mobile_or_email+'<br>'
+         +'Coins: <b style="color:var(--gold);">'+p.coins+'</b> &nbsp;|&nbsp; Joined: '+new Date(p.created_at).toLocaleDateString('en-IN')+'<br>'
+         +'Status: '+st+' &nbsp;'+btn
+         +'<br><button onclick="adminAddCoins(\''+p.player_id+'\')" style="background:#1a3c5e;color:white;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-top:5px;">+ Add Coins</button>'
+         +'</div>';
+  });
+  el.innerHTML=html||'<p style="color:gray;">No results.</p>';
+}
+
+async function adminToggleBan(pid, ban){
+  await sb.from('players').update({banned:ban}).eq('player_id',pid);
+  loadAdminUsers();
+  showFancyAlert(ban?'Player Banned!':'Player Unbanned!');
+}
+
+async function adminAddCoins(pid){
+  var amount=prompt('Kitne coins add karein?');
+  if(!amount||isNaN(parseInt(amount))) return;
+  var coins=parseInt(amount);
+  var { data:p } = await sb.from('players').select('coins').eq('player_id',pid).single();
+  if(!p) return;
+  await sb.from('players').update({coins:p.coins+coins}).eq('player_id',pid);
+  await sb.from('transactions').insert({
+    player_id:pid, type:'bonus', coins:coins,
+    description:'Admin credited '+coins+' coins', created_at:new Date().toISOString()
+  });
+  if(playerData&&playerData.player_id===pid){ playerData.coins+=coins; updateBalanceUI(); }
+  loadAdminUsers();
+  showFancyAlert(coins+' coins credited to player!');
+}
+
+async function loadWithdrawalRequests(){
+  var el=document.getElementById('withdraw-request-list');
+  el.innerHTML='<div class="spinner" style="margin:20px auto;"></div>';
+  var { data } = await sb.from('withdrawals').select('*').order('created_at',{ascending:false}).limit(50);
+  if(!data||data.length===0){ el.innerHTML='<p style="color:gray;">No withdrawal requests.</p>'; return; }
+  var html='';
+  data.forEach(function(r){
+    var sc=r.status==='Approved'?'#28a745':r.status==='Rejected'?'red':'#ffcc00';
+    var d=new Date(r.created_at).toLocaleString('en-IN');
+    html+='<div style="background:#0b1c2c;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #1a3c5e;color:white;font-size:12px;">'
+         +'<b>'+r.player_name+'</b> <span style="color:var(--gold);">#'+r.player_id+'</span><br>'
+         +'UPI: '+r.upi_id+'<br>'
+         +'Coins: <b style="color:var(--gold);">'+r.coins+'</b> = ₹'+r.inr_amount+'<br>'
+         +'Date: '+d+'<br>'
+         +'Status: <span style="color:'+sc+';font-weight:bold;">'+r.status+'</span><br>'
+         +'<div style="display:flex;gap:8px;margin-top:6px;">'
+         +'<button onclick="updateWithdrawStatus(\''+r.id+'\',\'Approved\')" style="background:#28a745;color:white;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Approve</button>'
+         +'<button onclick="updateWithdrawStatus(\''+r.id+'\',\'Rejected\',\''+r.player_id+'\','+r.coins+')" style="background:red;color:white;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Reject & Refund</button>'
+         +'</div></div>';
+  });
+  el.innerHTML=html;
+}
+
+async function updateWithdrawStatus(id, status, pid, coins){
+  await sb.from('withdrawals').update({status}).eq('id',id);
+  if(status==='Rejected'&&pid&&coins){
+    var { data:p }=await sb.from('players').select('coins').eq('player_id',pid).single();
+    if(p){
+      await sb.from('players').update({coins:p.coins+coins}).eq('player_id',pid);
+      await sb.from('transactions').insert({
+        player_id:pid, type:'refund', coins:coins,
+        description:'Withdrawal rejected — refund', created_at:new Date().toISOString()
+      });
+    }
+  }
+  loadWithdrawalRequests();
+  showFancyAlert('Request '+status+'!');
+}
+
+// ════════════════════════════════════════
+// CHAT
+// ════════════════════════════════════════
+function openChat(){ openModal('chatModal'); document.getElementById('sideMenu').classList.remove('open'); }
+
+function sendUserMsg(){
+  var input=document.getElementById('userMsgInput');
+  var msg=input.value.trim(); if(!msg) return;
+  var chatBox=document.getElementById('chat-messages');
+  var pid=playerData?'#'+playerData.player_id:'';
+
+  var ub=document.createElement('div');
+  ub.style.cssText='align-self:flex-end;background:var(--blue);color:white;padding:10px 15px;border-radius:15px 15px 0 15px;max-width:80%;font-size:14px;';
+  ub.textContent=msg;
+  chatBox.appendChild(ub);
+
+  var al=document.getElementById('admin-chat-list');
+  if(al){
+    var ar=document.createElement('div');
+    ar.style.cssText='border-bottom:1px solid #333;padding:8px;font-size:12px;color:white;';
+    ar.innerHTML='<b style="color:var(--gold);">'+(playerData?playerData.name:'Guest')+' '+pid+':</b> '+msg+'<br><small style="color:gray;">'+new Date().toLocaleTimeString('en-IN')+'</small>';
+    al.appendChild(ar);
+    al.scrollTop=al.scrollHeight;
+  }
+  input.value='';
+  chatBox.scrollTop=chatBox.scrollHeight;
+  setTimeout(function(){
+    var replies=['Namaste! Hamare agent aapki jald hi madad karenge.','Aapki ID note kar li gayi hai. Please wait karein.','Koi bhi deposit ya withdrawal issue ke liye hum available hain!'];
+    var bb=document.createElement('div');
+    bb.style.cssText='align-self:flex-start;background:#15304b;color:white;padding:10px 15px;border-radius:0 15px 15px 15px;max-width:80%;font-size:14px;border:1px solid #1a3c5e;';
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-size:10px;color:var(--green);display:block;margin-bottom:3px;';
+    lbl.textContent='Support Team';
+    bb.appendChild(lbl);
+    bb.appendChild(document.createTextNode(replies[Math.floor(Math.random()*replies.length)]));
+    chatBox.appendChild(bb);
+    chatBox.scrollTop=chatBox.scrollHeight;
+  },1500);
+}
+
+function sendAdminReply(){
+  var txt=document.getElementById('adminReply').value.trim();
+  if(!txt){ showFancyAlert('Khali reply nahi bhej sakte!'); return; }
+  var chatBox=document.getElementById('chat-messages');
+  var bb=document.createElement('div');
+  bb.style.cssText='align-self:flex-start;background:#15304b;color:white;padding:10px 15px;border-radius:0 15px 15px 15px;max-width:80%;font-size:14px;border:1px solid #1a3c5e;';
+  var lbl=document.createElement('span');
+  lbl.style.cssText='font-size:10px;color:var(--green);display:block;margin-bottom:3px;';
+  lbl.textContent='Support Team';
+  bb.appendChild(lbl);
+  bb.appendChild(document.createTextNode(txt));
+  chatBox.appendChild(bb);
+  chatBox.scrollTop=chatBox.scrollHeight;
+  document.getElementById('adminReply').value='';
+  showFancyAlert('Reply sent!');
+}
+let lastOver = null;
+
+function checkOverChange(currentOver){
+  if(lastOver !== null && currentOver > lastOver){
+    lockPrediction(lastOver + 1);
+    calculateResult(lastOver + 1);
+    openPrediction(currentOver + 1);
+  }
+  lastOver = currentOver;
+}
+
+function lockPrediction(over){
+  console.log("Locking Over:", over);
+  var btn=document.getElementById("investBtn");
+  if(btn) btn.disabled = true;
+}
+
+function openPrediction(over){
+  console.log("Opening Over:", over);
+
+  var overBox=document.getElementById("overBox");
+  var btn=document.getElementById("investBtn");
+  var runs=document.getElementById("runs");
+  var fours=document.getElementById("fours");
+  var sixes=document.getElementById("sixes");
+  if(overBox) overBox.innerText = over;
+  if(btn) btn.disabled = false;
+
+  if(runs) runs.value = "";
+  if(fours) fours.value = "";
+  if(sixes) sixes.value = "";
+}
+
+function calculateResult(over){
+  console.log("Checking result for Over:", over);
+
+  // 👉 abhi dummy hai (baad me API ya admin se data lena)
+}
+
+// ════════════════════════════════════════
+// SKY HIGH ADVENTURE GAME
+// ════════════════════════════════════════
+let skyhighGameState = {
+  playerName: '',
+  wallet: 0,
+  history: [],
+  gameRunning: false,
+  currentMultiplier: 1.0,
+  planeX: 0,
+  planeY: 0,
+  crashMultiplier: 0,
+  canvas: null,
+  ctx: null,
+  animationId: null,
+  betAmount: 10,
+  autoCashout: false,
+  autoTarget: 2.0,
+  activeBets: [],
+  gameHistory: []
+};
+
+function initSkyHighGame(){
+    if(!currentUser || !playerData){
+        showFancyAlert('Pehle Log In karein!');
+        switchTab('home-section','nav-home');
+        return;
+    }
+
+    // Main Balance Sync
+    skyhighGameState.playerName = playerData.player_name || 'Player';
+    skyhighGameState.wallet = playerData.coins; 
+    
+    skyhighUpdateUI();
+    
+    // Canvas setup aur animation start
+    skyhighGameState.canvas = document.getElementById('skyhigh-gameCanvas');
+    if(skyhighGameState.canvas) {
+        skyhighGameState.ctx = skyhighGameState.canvas.getContext('2d');
+        // Agar game ruka hua hai toh loop shuru karo
+        if(!skyhighGameState.gameRunning) {
+            console.log("Plane Engine Starting...");
+            skyhighStartNextRound(); // Ye function naya round start karega
+        }
+    }
+}
+
+function skyhighSavePlayerAndStart(){
+  var name = document.getElementById('skyhigh-regName').value.trim();
+  if(!name){
+    showFancyAlert('Player name dalein!');
+    return;
+  }
+
+  skyhighGameState.playerName = name;
+  skyhighGameState.wallet = 100; // Starting bonus
+  localStorage.setItem('skyhigh_player_name', name);
+  localStorage.setItem('skyhigh_wallet', skyhighGameState.wallet);
+
+  skyhighCloseModal('skyhigh-loginOverlay');
+  skyhighUpdateUI();
+  skyhighLoadHistory();
+  showFancyAlert('Welcome to Sky High, '+name+'!\nStarting bonus: 100 points!');
+}
+
+function skyhighUpdateUI(){
+  document.getElementById('skyhigh-displayPlayerName').textContent = skyhighGameState.playerName;
+  document.getElementById('skyhigh-walletDisplay').textContent = skyhighGameState.wallet.toFixed(2) + ' pts';
+  document.getElementById('skyhigh-withBalanceDisplay').textContent = skyhighGameState.wallet.toFixed(2);
+}
+
+function skyhighOpenModal(modalId){
+  document.getElementById(modalId).style.display = 'flex';
+}
+
+function skyhighCloseModal(modalId){
+  document.getElementById(modalId).style.display = 'none';
+}
+
+function skyhighSetDepAmt(amount){
+  document.getElementById('skyhigh-depAmount').value = amount;
+}
+
+async function skyhighProcessDeposit(){
+  var amount = parseFloat(document.getElementById('skyhigh-depAmount').value);
+  if(isNaN(amount) || amount <= 0){
+    showFancyAlert('Valid amount dalein!');
+    return;
+  }
+
+  // Convert WE WON coins to Sky High points (1 coin = 1 point)
+  if(!playerData || playerData.coins < amount){
+    showFancyAlert('Insufficient WE WON coins!');
+    return;
+  }
+
+  // Deduct from WE WON
+  var { error } = await sb.from('players').update({coins: playerData.coins - amount}).eq('player_id', playerData.player_id);
+  if(error){
+    showFancyAlert('Error: '+error.message);
+    return;
+  }
+
+  await sb.from('transactions').insert({
+    player_id: playerData.player_id,
+    type: 'transfer',
+    coins: -amount,
+    description: 'Transferred '+amount+' coins to Sky High',
+    created_at: new Date().toISOString()
+  });
+
+  // Add to Sky High
+  skyhighGameState.wallet += amount;
+  localStorage.setItem('skyhigh_wallet', skyhighGameState.wallet);
+  playerData.coins -= amount;
+  updateBalanceUI();
+
+  skyhighCloseModal('skyhigh-depositOverlay');
+  skyhighUpdateUI();
+  showFancyAlert(amount + ' points added to Sky High wallet!');
+}
+
+async function skyhighProcessWithdraw(){
+  var amount = parseFloat(document.getElementById('skyhigh-withAmount').value);
+  if(isNaN(amount) || amount <= 0){
+    showFancyAlert('Valid amount dalein!');
+    return;
+  }
+
+  if(amount > skyhighGameState.wallet){
+    showFancyAlert('Insufficient Sky High points!');
+    return;
+  }
+
+  // Convert back to WE WON coins
+  var { error } = await sb.from('players').update({coins: playerData.coins + amount}).eq('player_id', playerData.player_id);
+  if(error){
+    showFancyAlert('Error: '+error.message);
+    return;
+  }
+
+  await sb.from('transactions').insert({
+    player_id: playerData.player_id,
+    type: 'transfer',
+    coins: amount,
+    description: 'Transferred '+amount+' points from Sky High',
+    created_at: new Date().toISOString()
+  });
+
+  // Deduct from Sky High
+  skyhighGameState.wallet -= amount;
+  localStorage.setItem('skyhigh_wallet', skyhighGameState.wallet);
+  playerData.coins += amount;
+  updateBalanceUI();
+
+  skyhighCloseModal('skyhigh-withdrawOverlay');
+  skyhighUpdateUI();
+  showFancyAlert(amount + ' points withdrawn to WE WON wallet!');
+}
+
+function skyhighSwitchMode(panel, mode){
+  var tab1 = document.getElementById('skyhigh-tab1-manual');
+  var tab2 = document.getElementById('skyhigh-tab2-manual');
+  var tab1a = document.getElementById('skyhigh-tab1-auto');
+  var tab2a = document.getElementById('skyhigh-tab2-auto');
+  var row1 = document.getElementById('skyhigh-autoRow1');
+  var row2 = document.getElementById('skyhigh-autoRow2');
+
+  if(panel === 1){
+    if(mode === 'MANUAL'){
+      tab1.classList.add('active');
+      tab1a.classList.remove('active');
+      row1.style.display = 'none';
+    } else {
+      tab1.classList.remove('active');
+      tab1a.classList.add('active');
+      row1.style.display = 'flex';
+    }
+  } else {
+    if(mode === 'MANUAL'){
+      tab2.classList.add('active');
+      tab2a.classList.remove('active');
+      row2.style.display = 'none';
+    } else {
+      tab2.classList.remove('active');
+      tab2a.classList.add('active');
+      row2.style.display = 'flex';
+    }
+  }
+}
+
+function skyhighAdjustPts(panel, delta){
+  var el = document.getElementById('skyhigh-ptsVal' + panel);
+  var current = parseInt(el.textContent) || 0;
+  var newVal = Math.max(1, current + delta);
+  el.textContent = newVal;
+  skyhighUpdateBetDisplay(panel);
+}
+
+function skyhighAddQuickPts(panelNum, amount) {
+    let inputField = document.getElementById('skyhigh-ptsVal' + panelNum);
+    let currentValue = parseFloat(inputField.value) || 0; 
+
+    // Purani value mein nayi value ADD karein
+    let newValue = currentValue + amount; 
+
+    inputField.value = newValue; 
+}
+
+function skyhighUpdateBetDisplay(panel){
+  var pts = parseInt(document.getElementById('skyhigh-ptsVal' + panel).textContent) || 0;
+  var sub = document.getElementById('skyhigh-sub' + panel);
+  sub.textContent = pts.toFixed(2) + ' pts';
+}
+
+function skyhighHandleInput(panel){
+  var pts = parseInt(document.getElementById('skyhigh-ptsVal' + panel).textContent) || 0;
+  var btn = document.getElementById('skyhigh-btn' + panel);
+  var tab = document.getElementById('skyhigh-tab' + panel + '-auto');
+
+  if(skyhighGameState.gameRunning){
+    // Cash out
+    skyhighCashOut(panel, pts);
+  } else {
+    // Place bet
+    if(pts > skyhighGameState.wallet){
+      showFancyAlert('Insufficient points!');
+      return;
+    }
+
+    var isAuto = tab.classList.contains('active');
+    var autoTarget = isAuto ? parseFloat(document.getElementById('skyhigh-autoTarget' + panel).value) : 0;
+
+    skyhighPlaceBet(panel, pts, isAuto, autoTarget);
+  }
+}
+
+function skyhighPlaceBet(panel, amount, isAuto, autoTarget){
+    // 1. Balance Check (Main Balance use karein)
+    if(amount > playerData.coins){
+        showFancyAlert("Bhai, coins kam hain! 💰");
+        return;
+    }
+
+    // 2. Main Coins Deduct karein aur DB update karein
+    playerData.coins -= amount;
+    skyhighGameState.wallet = playerData.coins;
+    updateBalanceUI(); // Global balance update
+
+    // 3. Bet Record karein
+    skyhighGameState.activeBets.push({
+        panel: panel,
+        amount: amount,
+        isAuto: isAuto,
+        autoTarget: autoTarget,
+        startTime: Date.now()
+    });
+
+    // 4. Button UI Badlein
+    var btn = document.getElementById('skyhigh-btn' + panel);
+    btn.innerHTML = 'WAITING...';
+    btn.classList.remove('skyhigh-btn-green');
+    btn.classList.add('skyhigh-btn-orange');
+
+    // 5. Takeoff Logic
+    if(!skyhighGameState.gameRunning && skyhighGameState.activeBets.length === 1){
+        showFancyAlert("Takeoff in 3 seconds! ✈️");
+        
+        // Timer for takeoff
+        setTimeout(() => {
+            console.log("Plane Engine Ignite!");
+            skyhighStartGame(); 
+        }, 3000);
+    }
+}
+function skyhighStartNextRound() {
+    console.log("Preparing next round...");
+    
+    // Reset Multiplier and UI
+    skyhighGameState.currentMultiplier = 1.0;
+    skyhighGameState.gameRunning = false;
+    
+    // Clear Canvas for fresh start
+    if(skyhighGameState.ctx) {
+        skyhighGameState.ctx.clearRect(0, 0, skyhighGameState.canvas.width, skyhighGameState.canvas.height);
+    }
+
+    // Kuch seconds wait karke plane udayein (sirf agar koi bet lagi ho)
+    setTimeout(() => {
+        if (skyhighGameState.activeBets.length > 0) {
+            skyhighStartGame();
+        } else {
+            console.log("No bets placed, waiting...");
+            // Dubara check karein thodi der baad
+            skyhighStartNextRound(); 
+        }
+    }, 2000); 
+}
+
+function skyhighCashOut(panel, originalAmount){
+  var bet = skyhighGameState.activeBets.find(b => b.panel === panel);
+  if(!bet) return;
+
+  var winnings = Math.floor(originalAmount * skyhighGameState.currentMultiplier);
+  playerData.coins += (winnings - originalAmount); // Add profit to main balance
+  skyhighGameState.wallet = playerData.coins; // Sync UI wallet
+
+  // Remove this bet
+  skyhighGameState.activeBets = skyhighGameState.activeBets.filter(b => b.panel !== panel);
+  skyhighUpdateUI();
+
+  // Async DB update for security
+  sb.from('players').update({coins: playerData.coins}).eq('player_id', playerData.player_id).then(({error}) => {
+      if(error) console.error("Balance sync failed");
+  });
+
+  // Reset button
+  var btn = document.getElementById('skyhigh-btn' + panel);
+  btn.innerHTML = 'ENTER <span class="skyhigh-btn-sub-text">' + originalAmount.toFixed(2) + ' pts</span>';
+  btn.classList.remove('skyhigh-btn-orange');
+  btn.classList.add('skyhigh-btn-green');
+
+  skyhighAddToHistory(skyhighGameState.currentMultiplier, winnings - originalAmount);
+
+  if(skyhighGameState.activeBets.length === 0){
+    skyhighStopGame();
+  }
+}
+
+function skyhighStartGame() {
+    if (skyhighGameState.gameRunning) return;
+
+    // Canvas Check
+    skyhighGameState.canvas = document.getElementById('skyhigh-gameCanvas');
+    if (!skyhighGameState.canvas) {
+        console.error("Canvas nahi mila! ID 'skyhigh-gameCanvas' check karein.");
+        return;
+    }
+    skyhighGameState.ctx = skyhighGameState.canvas.getContext('2d');
+
+    skyhighGameState.gameRunning = true;
+    skyhighGameState.currentMultiplier = 1.0;
+    skyhighGameState.startTime = Date.now();
+    skyhighGameState.planeX = 0;
+    skyhighGameState.planeY = skyhighGameState.canvas.height / 2;
+
+    document.getElementById('skyhigh-crashMsg').style.display = 'none';
+    skyhighGameState.crashAt = (Math.random() * 5 + 1.1).toFixed(2); 
+
+    function updateMultiplier() {
+        if (!skyhighGameState.gameRunning) return;
+
+        let elapsed = (Date.now() - skyhighGameState.startTime) / 1000;
+        skyhighGameState.currentMultiplier = Math.pow(1.08, elapsed); 
+
+        // Multiplier Update
+        let mText = document.getElementById('skyhigh-multiplier');
+        if(mText) mText.innerText = skyhighGameState.currentMultiplier.toFixed(2) + 'x';
+
+        // Drawing
+        let ctx = skyhighGameState.ctx;
+        ctx.clearRect(0, 0, skyhighGameState.canvas.width, skyhighGameState.canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '35px Arial';
+        ctx.fillText('✈️', skyhighGameState.planeX, skyhighGameState.planeY);
+        skyhighGameState.planeX += 2;
+
+        // Auto Cashout & Crash Check
+        if (skyhighGameState.currentMultiplier >= parseFloat(skyhighGameState.crashAt)) {
+            skyhighStopGame();
+            return;
+        }
+
+        skyhighGameState.animationId = requestAnimationFrame(updateMultiplier);
+    }
+    
+    updateMultiplier(); // 👈 Ye line sabse zaroori hai engine start karne ke liye
+}
+
+function skyhighStopGame(){
+    skyhighGameState.gameRunning = false;
+    if(skyhighGameState.animationId){
+        cancelAnimationFrame(skyhighGameState.animationId);
+    }
+
+    // Flew Away UI Message
+    document.getElementById('skyhigh-crashMsg').style.display = 'block';
+
+    // Sabhi active bets ko harwa do
+    skyhighGameState.activeBets.forEach(bet => {
+        var btn = document.getElementById('skyhigh-btn' + bet.panel);
+        btn.innerHTML = 'CRASHED <span class="skyhigh-btn-sub-text">Lost ' + bet.amount.toFixed(2) + ' pts</span>';
+        btn.classList.remove('skyhigh-btn-orange');
+        btn.classList.add('skyhigh-btn-red');
+        
+        // 2 second baad button wapas green kar do
+        setTimeout(() => {
+            btn.innerHTML = 'ENTER <span class="skyhigh-btn-sub-text">' + bet.amount.toFixed(2) + ' pts</span>';
+            btn.classList.remove('skyhigh-btn-red');
+            btn.classList.add('skyhigh-btn-green');
+        }, 2000);
+    });
+
+    skyhighGameState.activeBets = [];
+    skyhighAddToHistory(parseFloat(skyhighGameState.crashAt), 0);
+}
+
+
+function skyhighGenerateCrashMultiplier(){
+  // Simple crash multiplier generation (1.01 to 50.00)
+  var rand = Math.random();
+  if(rand < 0.7) return 1.01 + (rand * 3); // 70% chance: 1.01-4.01
+  if(rand < 0.9) return 4 + (rand * 6); // 20% chance: 4-10
+  return 10 + (rand * 40); // 10% chance: 10-50
+}
+
+
+
+function skyhighAddToHistory(multiplier, profit){
+  var entry = {
+    multiplier: multiplier,
+    profit: profit,
+    time: new Date().toLocaleTimeString()
+  };
+  skyhighGameState.gameHistory.unshift(entry);
+  if(skyhighGameState.gameHistory.length > 50) skyhighGameState.gameHistory.pop();
+  skyhighUpdateHistoryBar();
+  localStorage.setItem('skyhigh_history', JSON.stringify(skyhighGameState.gameHistory));
+}
+
+function skyhighUpdateHistoryBar(){
+  var bar = document.getElementById('skyhigh-historyBox');
+  bar.innerHTML = '';
+  skyhighGameState.gameHistory.slice(0, 10).forEach(entry => {
+    var item = document.createElement('div');
+    item.className = 'skyhigh-hist-item';
+    item.textContent = entry.multiplier.toFixed(2) + 'x';
+    item.style.color = entry.profit > 0 ? '#28a745' : '#ff4d4d';
+    bar.appendChild(item);
+  });
+}
+
+function skyhighLoadHistory(){
+  var saved = localStorage.getItem('skyhigh_history');
+  if(saved){
+    skyhighGameState.gameHistory = JSON.parse(saved);
+    skyhighUpdateHistoryBar();
+  }
+}
+let playerHistory = [];
+
+function recordBetHistory(amount, multiplier) {
+    // Nayi history sabse aage daalo
+    playerHistory.unshift({ amount: amount, crash: multiplier });
+    
+    // Sirf last 10 record rakho
+    if(playerHistory.length > 10) playerHistory.pop(); 
+    
+    // UI update karo
+    let listHTML = '';
+    playerHistory.forEach(item => {
+        let color = item.crash > 1 ? '#00ff00' : '#ff3333';
+        listHTML += `<li style="margin:2px 0; border-bottom:1px solid #333;">₹${item.amount} at <span style="color:${color}">${item.crash}x</span></li>`;
+    });
+    document.getElementById('history-list').innerHTML = listHTML;
+}
+function skyhighOpenHistory(){
+  var grid = document.getElementById('skyhigh-historyGrid');
+  grid.innerHTML = '';
+  skyhighGameState.gameHistory.forEach(entry => {
+    var item = document.createElement('div');
+    item.className = 'skyhigh-grid-item';
+    item.textContent = entry.multiplier.toFixed(2) + 'x';
+    item.style.color = entry.profit > 0 ? '#28a745' : '#ff4d4d';
+    grid.appendChild(item);
+  });
+  skyhighOpenModal('skyhigh-historyModal');
+}
+
+
+// Start the engine when page loads or tab is switched
+// startAviatorRound();
+function skyhighCloseHistory(){
+  skyhighCloseModal('skyhigh-historyModal');
+}
+
+function openMermaidGraphEditor(){
+  const modal = document.getElementById('mermaidEditorModal');
+  if(modal){
+    openModal('mermaidEditorModal');
+    var src = document.getElementById('mermaid-src');
+    if(src && !src.value.trim()){
+      setDefaultMermaidGraph();
+    }
+    renderMermaidPreview();
+  }
+}
+
+function setDefaultMermaidGraph(){
+  var defaultGraph = `graph TD
+    Home[Home Section] --> Upcoming[Upcoming Matches]
+    Home --> Live[Live Prediction]
+    Home --> History[History Section]
+    Live --> SkyHigh[SkyHigh Game]
+    SkyHigh --> Crash[Multiplier Engine]
+    SkyHigh --> Wallet[Player Wallet]
+    History --> Ended[Ended Matches]
+    Menu[Side Menu] --> Login[Login/Register]
+    Menu --> Deposit[Buy Coins]
+    Menu --> Withdraw[Withdraw]
+    Menu --> Admin[Admin Panel]
+  `;
+  document.getElementById('mermaid-src').value = defaultGraph;
+}
+
+function copyMermaidSource() {
+  var textarea = document.getElementById('mermaid-src');
+  if (!textarea) return;
+  navigator.clipboard.writeText(textarea.value).then(function(){
+    showFancyAlert('Mermaid source copied to clipboard!');
+  }).catch(function(err){
+    console.warn('Clipboard copy failed:', err);
+    showFancyAlert('Copy failed. Please select and copy manually.');
+  });
+}
+
+function renderMermaidPreview(){
+  var source = document.getElementById('mermaid-src');
+  var preview = document.getElementById('mermaid-render');
+  if(!source || !preview) return;
+  var code = source.value || '';
+  try {
+    var graphId = 'mermaidPreviewSvg_' + Date.now();
+    mermaid.render(graphId, code, function(svgCode) {
+      preview.innerHTML = svgCode;
+    });
+  } catch(err) {
+    preview.innerHTML = '<pre style="color:#ff6b6b;">' + (err.message || err) + '</pre>';
+  }
+}
+</script>
+</body>
+</html>
