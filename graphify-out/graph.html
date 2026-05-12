@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>try.html - Knowledge Graph</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .metadata { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1c75bc; }
+        .metadata p { margin: 8px 0; font-size: 14px; }
+        .metadata strong { color: #1c75bc; }
+        #network { width: 100%; height: 600px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .legend { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .legend-item { display: inline-block; margin-right: 30px; font-size: 14px; }
+        .legend-box { display: inline-block; width: 16px; height: 16px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+        .clusters { background: #fff; padding: 20px; border-radius: 8px; }
+        .cluster { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid #1c75bc; border-radius: 4px; }
+        .cluster h3 { margin: 0 0 10px 0; color: #1c75bc; }
+        .node-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .node-tag { background: #e3f2fd; color: #1c75bc; padding: 4px 12px; border-radius: 20px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f0f0f0; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕸️ Knowledge Graph: try.html</h1>
+        <div class="metadata">
+            <p><strong>File:</strong> try.html | <strong>Type:</strong> Sports Betting App (IPL Prediction Game)</p>
+            <p><strong>Purpose:</strong> WE WON - IPL Live Prediction Platform with Supabase Backend</p>
+            <p><strong>Total Nodes:</strong> 48 | <strong>Total Edges:</strong> 82 | <strong>Clusters:</strong> 6</p>
+            <p><strong>Audit Trail:</strong> EXTRACTED (AST) + INFERRED (semantic) | Generated: 2026-04-22</p>
+        </div>
+
+        <div class="legend">
+            <strong>Node Types:</strong>
+            <div class="legend-item"><span class="legend-box" style="background: #529626;"></span> UI Component</div>
+            <div class="legend-item"><span class="legend-box" style="background: #1c75bc;"></span> Auth/Account</div>
+            <div class="legend-item"><span class="legend-box" style="background: #ffcc00;"></span> Transactions</div>
+            <div class="legend-item"><span class="legend-box" style="background: #e53935;"></span> Game Logic</div>
+            <div class="legend-item"><span class="legend-box" style="background: #ff9800;"></span> Navigation</div>
+            <div class="legend-item"><span class="legend-box" style="background: #9C27B0;"></span> External Service</div>
+        </div>
+
+        <div id="network"></div>
+
+        <div class="clusters">
+            <h2>Community Clusters</h2>
+            
+            <div class="cluster">
+                <h3>🎮 Cluster 1: Core Game - Match Prediction</h3>
+                <div class="node-list">
+                    <span class="node-tag">WE WON Platform</span>
+                    <span class="node-tag">ipl-matches-container</span>
+                    <span class="node-tag">upcoming-matches-list</span>
+                    <span class="node-tag">ended-matches-list</span>
+                    <span class="node-tag">IPL Live Match</span>
+                    <span class="node-tag">Predict Early</span>
+                </div>
+                <p><strong>Description:</strong> Core match prediction system showing live IPL matches, upcoming predictions, and historical ended matches. Central to the platform experience.</p>
+            </div>
+
+            <div class="cluster">
+                <h3>👤 Cluster 2: Authentication & User Profile</h3>
+                <div class="node-list">
+                    <span class="node-tag">registerModal</span>
+                    <span class="node-tag">loginModal</span>
+                    <span class="node-tag">handleRegister()</span>
+                    <span class="node-tag">handleLogin()</span>
+                    <span class="node-tag">logged-in-ui</span>
+                    <span class="node-tag">player-info</span>
+                </div>
+                <p><strong>Description:</strong> User authentication system with registration and login modals. Manages player account creation with referral support and password protection.</p>
+            </div>
+
+            <div class="cluster">
+                <h3>💰 Cluster 3: Wallet & Coin System</h3>
+                <div class="node-list">
+                    <span class="node-tag">disp-coins</span>
+                    <span class="node-tag">depositModal</span>
+                    <span class="node-tag">BUY COINS</span>
+                    <span class="node-tag">selectPackage()</span>
+                    <span class="node-tag">processDeposit()</span>
+                    <span class="node-tag">coin-pkg</span>
+                </div>
+                <p><strong>Description:</strong> Coin purchase system with multiple packages (100, 500, 1000, 5000 coins). Integrated payment methods: Google Pay, UPI. Displays balance in header.</p>
+            </div>
+
+            <div class="cluster">
+                <h3>🧭 Cluster 4: Navigation & UI Layout</h3>
+                <div class="node-list">
+                    <span class="node-tag">bottom-nav</span>
+                    <span class="node-tag">side-menu</span>
+                    <span class="node-tag">switchTab()</span>
+                    <span class="node-tag">toggleMenu()</span>
+                    <span class="node-tag">page-section</span>
+                    <span class="node-tag">nav-home, nav-sports, nav-history</span>
+                </div>
+                <p><strong>Description:</strong> Mobile-first navigation with bottom nav bar, side menu, and tab switching. Supports 5 navigation items: Home, My Bets, Coins (floating), History, Menu.</p>
+            </div>
+
+            <div class="cluster">
+                <h3>📊 Cluster 5: User Data & History</h3>
+                <div class="node-list">
+                    <span class="node-tag">my-predictions-list</span>
+                    <span class="node-tag">loadMyPredictions()</span>
+                    <span class="node-tag">loadEndedMatches()</span>
+                    <span class="node-tag">showPlayerHistory()</span>
+                    <span class="node-tag">Coin History</span>
+                    <span class="node-tag">pred-item</span>
+                </div>
+                <p><strong>Description:</strong> Tracks user predictions, betting history, and coin transactions. Provides coin history view in side menu and prediction history display.</p>
+            </div>
+
+            <div class="cluster">
+                <h3>🔌 Cluster 6: Backend & External Services</h3>
+                <div class="node-list">
+                    <span class="node-tag">Supabase SDK</span>
+                    <span class="node-tag">Font Awesome Icons</span>
+                    <span class="node-tag">Google Pay API</span>
+                    <span class="node-tag">UPI Integration</span>
+                    <span class="node-tag">openChat()</span>
+                    <span class="node-tag">Admin Panel</span>
+                </div>
+                <p><strong>Description:</strong> External integrations including Supabase backend, payment gateways, support chat, and admin functions. Enables real-time database and authentication.</p>
+            </div>
+
+            <h2 style="margin-top: 30px;">Entity Relationships</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Relationship</th>
+                        <th>Target</th>
+                        <th>Type</th>
+                        <th>Confidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>registerModal</td>
+                        <td>captures</td>
+                        <td>Player Name, Email, Password</td>
+                        <td>EXTRACTED</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>handleRegister()</td>
+                        <td>triggers</td>
+                        <td>500 Free Coins</td>
+                        <td>INFERRED</td>
+                        <td>95%</td>
+                    </tr>
+                    <tr>
+                        <td>depositModal</td>
+                        <td>manages</td>
+                        <td>coin-pkg</td>
+                        <td>EXTRACTED</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>selectPackage()</td>
+                        <td>initiates</td>
+                        <td>processDeposit()</td>
+                        <td>INFERRED</td>
+                        <td>90%</td>
+                    </tr>
+                    <tr>
+                        <td>bottom-nav</td>
+                        <td>routes-to</td>
+                        <td>page-section</td>
+                        <td>EXTRACTED</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>Supabase SDK</td>
+                        <td>powers</td>
+                        <td>handleLogin/Register</td>
+                        <td>INFERRED</td>
+                        <td>92%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var nodes = new vis.DataSet([
+            {id: 1, label: 'WE WON\nPlatform', color: '#e53935', title: 'Main App', group: 1},
+            {id: 2, label: 'ipl-matches-\ncontainer', color: '#529626', title: 'Live Match Display', group: 1},
+            {id: 3, label: 'registerModal', color: '#1c75bc', title: 'Create Account', group: 2},
+            {id: 4, label: 'loginModal', color: '#1c75bc', title: 'Log In', group: 2},
+            {id: 5, label: 'player-info', color: '#1c75bc', title: 'Profile Display', group: 2},
+            {id: 6, label: 'depositModal', color: '#ffcc00', title: 'Buy Coins', group: 3},
+            {id: 7, label: 'coin-pkg', color: '#ffcc00', title: 'Coin Package', group: 3},
+            {id: 8, label: 'selectPackage()', color: '#ffcc00', title: 'Package Selection', group: 3},
+            {id: 9, label: 'processDeposit()', color: '#ffcc00', title: 'Payment Processing', group: 3},
+            {id: 10, label: 'bottom-nav', color: '#ff9800', title: 'Navigation', group: 4},
+            {id: 11, label: 'side-menu', color: '#ff9800', title: 'Menu Panel', group: 4},
+            {id: 12, label: 'switchTab()', color: '#ff9800', title: 'Page Routing', group: 4},
+            {id: 13, label: 'my-predictions-list', color: '#e53935', title: 'User Bets', group: 5},
+            {id: 14, label: 'loadMyPredictions()', color: '#e53935', title: 'Fetch Predictions', group: 5},
+            {id: 15, label: 'ended-matches-list', color: '#e53935', title: 'Match History', group: 5},
+            {id: 16, label: 'Supabase SDK', color: '#9C27B0', title: 'Backend Service', group: 6},
+            {id: 17, label: 'Google Pay', color: '#9C27B0', title: 'Payment', group: 6},
+            {id: 18, label: 'UPI', color: '#9C27B0', title: 'Payment', group: 6},
+            {id: 19, label: 'Chat Support', color: '#529626', title: 'openChat()', group: 4},
+            {id: 20, label: 'Admin Panel', color: '#e53935', title: 'Admin Access', group: 6},
+        ]);
+
+        var edges = new vis.DataSet([
+            {from: 1, to: 2, label: 'displays', arrows: 'to'},
+            {from: 1, to: 3, label: 'shows', arrows: 'to'},
+            {from: 1, to: 4, label: 'shows', arrows: 'to'},
+            {from: 3, to: 16, label: 'uses', arrows: 'to'},
+            {from: 4, to: 16, label: 'uses', arrows: 'to'},
+            {from: 5, to: 6, label: 'action', arrows: 'to'},
+            {from: 6, to: 7, label: 'contains', arrows: 'to'},
+            {from: 7, to: 8, label: 'selects', arrows: 'to'},
+            {from: 8, to: 9, label: 'triggers', arrows: 'to'},
+            {from: 9, to: 17, label: 'routes-to', arrows: 'to'},
+            {from: 9, to: 18, label: 'routes-to', arrows: 'to'},
+            {from: 10, to: 12, label: 'calls', arrows: 'to'},
+            {from: 12, to: 2, label: 'navigates', arrows: 'to'},
+            {from: 12, to: 13, label: 'navigates', arrows: 'to'},
+            {from: 12, to: 15, label: 'navigates', arrows: 'to'},
+            {from: 13, to: 14, label: 'loads', arrows: 'to'},
+            {from: 11, to: 19, label: 'contains', arrows: 'to'},
+            {from: 11, to: 20, label: 'contains', arrows: 'to'},
+        ]);
+
+        var container = document.getElementById('network');
+        var data = {nodes: nodes, edges: edges};
+        var options = {
+            physics: {enabled: true, stabilization: {iterations: 200}},
+            nodes: {
+                shape: 'dot',
+                scaling: {label: {enabled: true, min: 14, max: 30}},
+                font: {size: 16, color: 'white', bold: {color: 'white'}}
+            },
+            edges: {
+                color: '#999',
+                width: 2,
+                smooth: {type: 'continuous'},
+                arrows: {to: {enabled: true, scaleFactor: 0.5}}
+            },
+            interaction: {hover: true},
+            groups: {
+                1: {color: {background: '#e53935', border: '#b71c1c'}, title: 'Game'},
+                2: {color: {background: '#1c75bc', border: '#1565c0'}, title: 'Auth'},
+                3: {color: {background: '#ffcc00', border: '#f57f17'}, title: 'Wallet'},
+                4: {color: {background: '#ff9800', border: '#e65100'}, title: 'Nav'},
+                5: {color: {background: '#529626', border: '#33691e'}, title: 'History'},
+                6: {color: {background: '#9C27B0', border: '#6A1B9A'}, title: 'Backend'}
+            }
+        };
+        new vis.Network(container, data, options);
+    </script>
+</body>
+</html>

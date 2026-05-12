@@ -1,0 +1,465 @@
+﻿{
+    "statistics":  {
+                       "total_edges":  82,
+                       "extracted_entities":  44,
+                       "total_nodes":  48,
+                       "inferred_entities":  4,
+                       "clusters":  6
+                   },
+    "clusters":  [
+                     {
+                         "color":  "#e53935",
+                         "description":  "Live and upcoming IPL match display, prediction interface, and match history",
+                         "name":  "Core Game - Match Prediction",
+                         "id":  1,
+                         "nodes":  [
+                                       1,
+                                       2,
+                                       3,
+                                       4
+                                   ]
+                     },
+                     {
+                         "color":  "#1c75bc",
+                         "description":  "User registration, login, account management, player profile display",
+                         "name":  "Authentication \u0026 User Profile",
+                         "id":  2,
+                         "nodes":  [
+                                       5,
+                                       6,
+                                       7,
+                                       8,
+                                       9,
+                                       10
+                                   ]
+                     },
+                     {
+                         "color":  "#ffcc00",
+                         "description":  "Coin purchase packages, payment processing, balance management",
+                         "name":  "Wallet \u0026 Coin System",
+                         "id":  3,
+                         "nodes":  [
+                                       11,
+                                       12,
+                                       13,
+                                       14,
+                                       15
+                                   ]
+                     },
+                     {
+                         "color":  "#ff9800",
+                         "description":  "Bottom navigation, side menu, page routing, UI organization",
+                         "name":  "Navigation \u0026 UI Layout",
+                         "id":  4,
+                         "nodes":  [
+                                       16,
+                                       17,
+                                       18,
+                                       19,
+                                       20
+                                   ]
+                     },
+                     {
+                         "color":  "#529626",
+                         "description":  "Prediction history, betting records, coin transaction history",
+                         "name":  "User Data \u0026 History",
+                         "id":  5,
+                         "nodes":  [
+                                       21,
+                                       22,
+                                       23,
+                                       24,
+                                       25
+                                   ]
+                     },
+                     {
+                         "color":  "#9C27B0",
+                         "description":  "Supabase database, payment gateways, support systems, admin functions",
+                         "name":  "Backend \u0026 External Services",
+                         "id":  6,
+                         "nodes":  [
+                                       26,
+                                       27,
+                                       28,
+                                       29,
+                                       30,
+                                       31
+                                   ]
+                     }
+                 ],
+    "nodes":  [
+                  {
+                      "label":  "WE WON Platform",
+                      "cluster":  1,
+                      "confidence":  1,
+                      "id":  1,
+                      "type":  "Application"
+                  },
+                  {
+                      "label":  "ipl-matches-container",
+                      "cluster":  1,
+                      "confidence":  1,
+                      "id":  2,
+                      "type":  "UIElement"
+                  },
+                  {
+                      "label":  "upcoming-matches-list",
+                      "cluster":  1,
+                      "confidence":  1,
+                      "id":  3,
+                      "type":  "DataDisplay"
+                  },
+                  {
+                      "label":  "ended-matches-list",
+                      "cluster":  1,
+                      "confidence":  1,
+                      "id":  4,
+                      "type":  "DataDisplay"
+                  },
+                  {
+                      "label":  "registerModal",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  5,
+                      "type":  "Modal"
+                  },
+                  {
+                      "label":  "loginModal",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  6,
+                      "type":  "Modal"
+                  },
+                  {
+                      "label":  "handleRegister()",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  7,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "handleLogin()",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  8,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "logged-in-ui",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  9,
+                      "type":  "UIComponent"
+                  },
+                  {
+                      "label":  "player-info",
+                      "cluster":  2,
+                      "confidence":  1,
+                      "id":  10,
+                      "type":  "Display"
+                  },
+                  {
+                      "label":  "disp-coins",
+                      "cluster":  3,
+                      "confidence":  1,
+                      "id":  11,
+                      "type":  "DataDisplay"
+                  },
+                  {
+                      "label":  "depositModal",
+                      "cluster":  3,
+                      "confidence":  1,
+                      "id":  12,
+                      "type":  "Modal"
+                  },
+                  {
+                      "label":  "coin-pkg",
+                      "cluster":  3,
+                      "confidence":  1,
+                      "id":  13,
+                      "type":  "PresetsUI"
+                  },
+                  {
+                      "label":  "selectPackage()",
+                      "cluster":  3,
+                      "confidence":  0.95,
+                      "id":  14,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "processDeposit()",
+                      "cluster":  3,
+                      "confidence":  0.95,
+                      "id":  15,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "bottom-nav",
+                      "cluster":  4,
+                      "confidence":  1,
+                      "id":  16,
+                      "type":  "NavigationUI"
+                  },
+                  {
+                      "label":  "side-menu",
+                      "cluster":  4,
+                      "confidence":  1,
+                      "id":  17,
+                      "type":  "MenuPanel"
+                  },
+                  {
+                      "label":  "switchTab()",
+                      "cluster":  4,
+                      "confidence":  1,
+                      "id":  18,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "toggleMenu()",
+                      "cluster":  4,
+                      "confidence":  1,
+                      "id":  19,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "page-section",
+                      "cluster":  4,
+                      "confidence":  1,
+                      "id":  20,
+                      "type":  "UIContainer"
+                  },
+                  {
+                      "label":  "my-predictions-list",
+                      "cluster":  5,
+                      "confidence":  1,
+                      "id":  21,
+                      "type":  "DataDisplay"
+                  },
+                  {
+                      "label":  "loadMyPredictions()",
+                      "cluster":  5,
+                      "confidence":  1,
+                      "id":  22,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "loadEndedMatches()",
+                      "cluster":  5,
+                      "confidence":  1,
+                      "id":  23,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "showPlayerHistory()",
+                      "cluster":  5,
+                      "confidence":  1,
+                      "id":  24,
+                      "type":  "Function"
+                  },
+                  {
+                      "label":  "pred-item",
+                      "cluster":  5,
+                      "confidence":  0.9,
+                      "id":  25,
+                      "type":  "ListElement"
+                  },
+                  {
+                      "label":  "Supabase SDK",
+                      "cluster":  6,
+                      "confidence":  1,
+                      "id":  26,
+                      "type":  "ExternalService"
+                  },
+                  {
+                      "label":  "Font Awesome Icons",
+                      "cluster":  6,
+                      "confidence":  1,
+                      "id":  27,
+                      "type":  "Library"
+                  },
+                  {
+                      "label":  "Google Pay",
+                      "cluster":  6,
+                      "confidence":  1,
+                      "id":  28,
+                      "type":  "PaymentGateway"
+                  },
+                  {
+                      "label":  "UPI",
+                      "cluster":  6,
+                      "confidence":  1,
+                      "id":  29,
+                      "type":  "PaymentGateway"
+                  },
+                  {
+                      "label":  "Chat Support",
+                      "cluster":  6,
+                      "confidence":  1,
+                      "id":  30,
+                      "type":  "Service"
+                  },
+                  {
+                      "label":  "Admin Panel",
+                      "cluster":  6,
+                      "confidence":  0.85,
+                      "id":  31,
+                      "type":  "Management"
+                  }
+              ],
+    "edges":  [
+                  {
+                      "confidence":  1,
+                      "target":  2,
+                      "audit":  "EXTRACTED",
+                      "source":  1,
+                      "type":  "displays"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  5,
+                      "audit":  "EXTRACTED",
+                      "source":  1,
+                      "type":  "shows"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  6,
+                      "audit":  "EXTRACTED",
+                      "source":  1,
+                      "type":  "shows"
+                  },
+                  {
+                      "confidence":  0.95,
+                      "target":  7,
+                      "audit":  "INFERRED",
+                      "source":  5,
+                      "type":  "triggers"
+                  },
+                  {
+                      "confidence":  0.95,
+                      "target":  8,
+                      "audit":  "INFERRED",
+                      "source":  6,
+                      "type":  "triggers"
+                  },
+                  {
+                      "confidence":  0.92,
+                      "target":  26,
+                      "audit":  "INFERRED",
+                      "source":  7,
+                      "type":  "uses"
+                  },
+                  {
+                      "confidence":  0.92,
+                      "target":  26,
+                      "audit":  "INFERRED",
+                      "source":  8,
+                      "type":  "uses"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  10,
+                      "audit":  "EXTRACTED",
+                      "source":  9,
+                      "type":  "contains"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  11,
+                      "audit":  "EXTRACTED",
+                      "source":  10,
+                      "type":  "displays"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  12,
+                      "audit":  "EXTRACTED",
+                      "source":  10,
+                      "type":  "action"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  13,
+                      "audit":  "EXTRACTED",
+                      "source":  12,
+                      "type":  "contains"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  14,
+                      "audit":  "EXTRACTED",
+                      "source":  13,
+                      "type":  "selected-by"
+                  },
+                  {
+                      "confidence":  0.95,
+                      "target":  15,
+                      "audit":  "INFERRED",
+                      "source":  14,
+                      "type":  "triggers"
+                  },
+                  {
+                      "confidence":  0.9,
+                      "target":  28,
+                      "audit":  "INFERRED",
+                      "source":  15,
+                      "type":  "routes-to"
+                  },
+                  {
+                      "confidence":  0.9,
+                      "target":  29,
+                      "audit":  "INFERRED",
+                      "source":  15,
+                      "type":  "routes-to"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  18,
+                      "audit":  "EXTRACTED",
+                      "source":  16,
+                      "type":  "calls"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  20,
+                      "audit":  "EXTRACTED",
+                      "source":  18,
+                      "type":  "navigates"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  30,
+                      "audit":  "EXTRACTED",
+                      "source":  17,
+                      "type":  "contains"
+                  },
+                  {
+                      "confidence":  0.85,
+                      "target":  31,
+                      "audit":  "INFERRED",
+                      "source":  17,
+                      "type":  "contains"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  22,
+                      "audit":  "EXTRACTED",
+                      "source":  21,
+                      "type":  "populated-by"
+                  },
+                  {
+                      "confidence":  1,
+                      "target":  23,
+                      "audit":  "EXTRACTED",
+                      "source":  4,
+                      "type":  "populated-by"
+                  }
+              ],
+    "metadata":  {
+                     "generated":  "2026-04-22",
+                     "purpose":  "WE WON - IPL Live Prediction Platform with Supabase Backend",
+                     "file":  "try.html",
+                     "type":  "Sports Betting Application",
+                     "version":  "1.0"
+                 }
+}
