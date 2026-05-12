@@ -1581,15 +1581,21 @@ let currentKeyIndex = 0;
 function getApiKey() { return API_KEYS[currentKeyIndex]; }
 function rotateKey() { currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length; console.log('API key rotated to #'+(currentKeyIndex+1)); }
 
-const API_FETCH_TIMEOUT_MS = 10000;
+const API_FETCH_TIMEOUT_MS = 20000; // Increased to 20s for better reliability
 async function fetchWithTimeout(url, options = {}, timeout = API_FETCH_TIMEOUT_MS) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
     const response = await fetch(url, { signal: controller.signal, ...options });
-    return response;
-  } finally {
     clearTimeout(id);
+    return response;
+  } catch(err) {
+    clearTimeout(id);
+    if (err.name === 'AbortError') {
+      console.warn('Fetch timeout after ' + timeout + 'ms for: ' + url);
+      throw new Error('Request timeout after ' + timeout + 'ms');
+    }
+    throw err;
   }
 }
 
@@ -2144,42 +2150,43 @@ async function updateLiveCricketData() {
     var container = document.getElementById('ipl-matches-container');
     if (!container) return;
 
-    // Bug flow graph saved in updateLiveCricketDataGraph
-  
-
-    
     try {
-        // 1. SABSE PEHLE: Check karo admin ne kaunsa mode set kiya hai (Settings table se)
-        let { data: settings } = await sb.from('site_settings').select('data_source').eq('id', 1).single();
-        const mode = settings ? settings.data_source : 'api';
+        // 1. Check admin mode setting
+        let settings = null;
+        try {
+          let result = await sb.from('site_settings').select('data_source').eq('id', 1).single();
+          settings = result && result.data ? result.data : null;
+        } catch(e) {
+          console.warn('Settings fetch failed:', e);
+        }
+        const mode = (settings && settings.data_source) ? settings.data_source : 'api';
 
-        // 2. AGAR MANUAL MODE HAI: Toh direct Supabase (Admin) se uthao
+        // 2. If manual mode, fetch admin match
         if (mode === 'manual') {
             console.log("Manual Mode Active. Fetching from DB...");
-            let { data: adminMatch } = await sb.from('live_match').select('*').eq('is_active', true).eq('id', 1).single();
-            if (adminMatch) {
-                container.innerHTML = ""; // Purana kachra saaf
-                renderLiveMatch(adminMatch);
-                return; // Yahin ruk jao
+            try {
+              let result = await sb.from('live_match').select('*').eq('is_active', true).limit(1).single();
+              let adminMatch = result && result.data ? result.data : null;
+              if (adminMatch) {
+                  container.innerHTML = "";
+                  renderLiveMatch(adminMatch);
+                  return;
+              }
+            } catch(e) {
+              console.error('Admin match fetch failed:', e);
             }
         }
 
-        // 3. AGAR API MODE HAI: Toh API try karo
+        // 3. Try API mode
         console.log("API Mode Active. Fetching from CricAPI...");
         const apiUrl = 'https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey() + '&offset=0';
-        const apiOpts = {
-            mode: 'cors'
-        };
+        const apiOpts = { mode: 'cors' };
 
         var res = await fetchWithTimeout(apiUrl, apiOpts, API_FETCH_TIMEOUT_MS);
         if ((!res || !res.ok) && res && [429, 403, 406].includes(res.status)) {
             rotateKey();
             console.log('Retrying CricAPI with rotated key...');
-            res = await fetchWithTimeout(
-                'https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey() + '&offset=0',
-                apiOpts,
-                API_FETCH_TIMEOUT_MS
-            );
+            res = await fetchWithTimeout(apiUrl, apiOpts, API_FETCH_TIMEOUT_MS);
         }
 
         if (!res || !res.ok) {
@@ -2194,11 +2201,10 @@ async function updateLiveCricketData() {
         });
 
         if (ipl.length > 0) {
-            container.innerHTML = ""; // Clear for API results
+            container.innerHTML = "";
             liveMatchData = null;
             renderIPLMatches(ipl);
         } else {
-            // Agar API par koi match nahi hai toh empty state dikhao
             container.innerHTML = `
                 <div style="text-align:center;padding:20px;color:var(--text-muted);">
                     <p>🏏 Abhi koi IPL match live nahi hai</p>
@@ -2208,8 +2214,15 @@ async function updateLiveCricketData() {
 
     } catch (e) {
         console.error("Fetch Error:", e);
-        // FALLBACK: Agar API fail ho jaye toh emergency mein Admin data dikhao
-        let { data: fallbackMatch } = await sb.from('live_match').select('*').eq('is_active', true).eq('id', 1).single();
+        // Fallback to admin data
+        var fallbackMatch = null;
+        try {
+          let result = await sb.from('live_match').select('*').eq('is_active', true).limit(1).single();
+          fallbackMatch = result && result.data ? result.data : null;
+        } catch(fbErr) {
+          console.warn('Fallback fetch failed:', fbErr);
+        }
+        
         if (fallbackMatch) {
             container.innerHTML = "";
             renderLiveMatch(fallbackMatch);
@@ -3620,20 +3633,20 @@ function openMermaidGraphEditor(){
 }
 
 function setDefaultMermaidGraph(){
-  var defaultGraph = `graph TD
-    Home[Home Section] --> Upcoming[Upcoming Matches]
-    Home --> Live[Live Prediction]
-    Home --> History[History Section]
-    Live --> SkyHigh[SkyHigh Game]
-    SkyHigh --> Crash[Multiplier Engine]
-    SkyHigh --> Wallet[Player Wallet]
-    History --> Ended[Ended Matches]
-    Menu[Side Menu] --> Login[Login/Register]
-    Menu --> Deposit[Buy Coins]
-    Menu --> Withdraw[Withdraw]
-    Menu --> Admin[Admin Panel]
-  `;
-  document.getElementById('mermaid-src').value = defaultGraph;
+  var defaultGraph = 'graph TD\n' +
+    '  Home[Home Section] --> Upcoming[Upcoming Matches]\n' +
+    '  Home --> Live[Live Prediction]\n' +
+    '  Home --> History[History Section]\n' +
+    '  Live --> SkyHigh[SkyHigh Game]\n' +
+    '  SkyHigh --> Crash[Multiplier Engine]\n' +
+    '  SkyHigh --> Wallet[Player Wallet]\n' +
+    '  History --> Ended[Ended Matches]\n' +
+    '  Menu[Side Menu] --> Login[Login/Register]\n' +
+    '  Menu --> Deposit[Buy Coins]\n' +
+    '  Menu --> Withdraw[Withdraw]\n' +
+    '  Menu --> Admin[Admin Panel]\n';
+  var srcEl = document.getElementById('mermaid-src');
+  if(srcEl) srcEl.value = defaultGraph;
 }
 
 function copyMermaidSource() {
@@ -3652,13 +3665,19 @@ function renderMermaidPreview(){
   var preview = document.getElementById('mermaid-render');
   if(!source || !preview) return;
   var code = source.value || '';
+  if(!code.trim()) {
+    preview.innerHTML = '<p style="color:#a0b2c6;text-align:center;padding:20px;">Paste or type Mermaid code to preview...</p>';
+    return;
+  }
   try {
     var graphId = 'mermaidPreviewSvg_' + Date.now();
     mermaid.render(graphId, code, function(svgCode) {
-      preview.innerHTML = svgCode;
+      if(svgCode) preview.innerHTML = svgCode;
     });
   } catch(err) {
-    preview.innerHTML = '<pre style="color:#ff6b6b;">' + (err.message || err) + '</pre>';
+    var msg = err.message || String(err);
+    preview.innerHTML = '<pre style="color:#ff6b6b;font-size:12px;padding:10px;white-space:pre-wrap;word-wrap:break-word;">' + msg.substring(0, 500) + '</pre>';
+    console.error('Mermaid render error:', err);
   }
 }
 </script>
