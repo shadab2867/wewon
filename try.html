@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WE WON - IPL Prediction Game & Aviator Finance</title>
+<title>AVIATOR - Premium Crash Game & IPL Predictions</title>
 <link rel="icon" href="we-win-logo.png" type="image/png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -833,6 +833,26 @@ body{padding-bottom:120px;}
     font-weight: bold;
     color: white;
 }
+
+/* Flew Away Crash Message */
+.skyhigh-crash-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    font-weight: bold;
+    color: #ff0033;
+    text-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033, 0 0 30px #ff0033;
+    animation: crashGlow 1s ease-in-out infinite alternate;
+    z-index: 10;
+}
+
+@keyframes crashGlow {
+    0% { text-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033, 0 0 30px #ff0033; }
+    100% { text-shadow: 0 0 15px #ff0033, 0 0 30px #ff0033, 0 0 45px #ff0033; }
+}
+
 /* --- Premium Jackpot Styling --- */
 .jackpot-container {
     background: #081420; /* Deep dark blue */
@@ -1056,7 +1076,7 @@ body{padding-bottom:120px;}
     <!-- HERO BANNER -->
     <div class="hero-banner interactive-aviator-banner" onclick="switchToAviator()" style="margin-top:5px;">
         <div class="hero-text-content">
-            <h2>🏆 WE WON — Live Prediction</h2>
+            <h2>🏆 AVIATOR — Live Prediction</h2>
             <p class="bonus-tagpulse">🚀 SUPER OFFER: 100% BONUS ON FIRST DEPOSIT!</p>
             <button class="play-btn">Play Now — It's Free!</button>
         </div>
