@@ -907,29 +907,29 @@ function renderIPLMatches(matches){
 }
 
 // LINE 909
+// LINE 909 se REPLACE karein:
 function renderLiveMatchFromAPI(match, index) {
     var s1 = '—', s2 = '—';
-    var targetOver = 12; // Default fallback
+    var targetOver = 12;
 
-    // Current innings ka over nikalne ka logic
-    var currentScore = (match.score && match.score[1]) ? match.score[1] : (match.score && match.score[0] ? match.score[0] : null);
+    var scoreObj = (match.score && match.score[1]) ? match.score[1] : (match.score && match.score[0] ? match.score[0] : null);
     
-    if (currentScore && currentScore.o) {
+    if (scoreObj && scoreObj.o) {
         s1 = (match.score[0]) ? match.score[0].r + '/' + match.score[0].w + ' (' + match.score[0].o + ' ov)' : '—';
         s2 = (match.score[1]) ? match.score[1].r + '/' + match.score[1].w + ' (' + match.score[1].o + ' ov)' : '—';
         
-        // Logic: Agar 13.1 over chal raha hai (14th over in progress), 
-        // toh prediction 15th over ki dikhao.
-        var oversCompleted = Math.floor(parseFloat(currentScore.o));
-        targetOver = oversCompleted + 2; 
+        // current over 16.3 hai toh math.floor se 16 + 2 = 18 prediction over banega
+        targetOver = Math.floor(parseFloat(scoreObj.o)) + 2; 
     }
 
     var t1 = match.teams[0] || 'Team 1';
     var t2 = match.teams[1] || 'Team 2';
     
-    // LINE 916: Yahan fixed '12' ki jagah 'targetOver' pass karein
     var obj = { t1, t2, s1, s2, name: match.name, status: match.status, over: targetOver };
     renderLiveMatch(obj, index);
+
+    // RESET PROBLEM FIX: Render ke turant baad pending bet check karein
+    restoreBetUI(targetOver, index);
 }
 function renderLiveMatch(match, index){
   index = index||0;
@@ -1187,6 +1187,34 @@ async function restorePendingBetState(targetOver, index) {
          document.getElementById('jp-win-status-'+index).innerHTML = "<span style='color:orange;'><i class='fa-solid fa-spinner fa-spin'></i> Over khatam hone ka wait kar rahe hain...</span>";
      }
   }
+}
+
+async function restoreBetUI(targetOver, index) {
+    if(!playerData) return;
+    
+    // Supabase se check karein ki is over ki bet pending hai ya nahi
+    const { data } = await sb.from('jackpot_predictions')
+        .select('*')
+        .eq('player_id', playerData.player_id)
+        .eq('over_number', targetOver)
+        .eq('result', 'pending')
+        .single();
+
+    if (data) {
+        // Agar bet mil gayi, toh UI elements ko "Locked" state mein dalein
+        const btn = document.getElementById('jp-invest-btn-' + index);
+        if(btn) {
+            btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;"></div>';
+            btn.disabled = true;
+            btn.style.background = '#aaa';
+            
+            document.getElementById('jp-result-container-' + index).style.display = 'block';
+            document.getElementById('jp-pred-run-' + index).innerText = data.predicted_runs;
+            document.getElementById('jp-pred-six-' + index).innerText = data.predicted_sixes;
+            document.getElementById('jp-pred-four-' + index).innerText = data.predicted_fours;
+            document.getElementById('jp-win-status-' + index).innerHTML = "<span style='color:orange;'>⏳ Over khatam hone ka wait karein...</span>";
+        }
+    }
 }
 // ════════════════════════════════════════
 // RUN TARGET (+20 auto-fill)
