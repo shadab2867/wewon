@@ -2285,30 +2285,16 @@ function renderIPLMatches(matches){
   renderLiveMatchFromAPI(matches[0], 0);
 }
 
-// LINE 909
-// LINE 909 se REPLACE karein:
 function renderLiveMatchFromAPI(match, index) {
-    var s1 = '—', s2 = '—';
-    var targetOver = 12;
-
-    var scoreObj = (match.score && match.score[1]) ? match.score[1] : (match.score && match.score[0] ? match.score[0] : null);
-    
-    if (scoreObj && scoreObj.o) {
-        s1 = (match.score[0]) ? match.score[0].r + '/' + match.score[0].w + ' (' + match.score[0].o + ' ov)' : '—';
-        s2 = (match.score[1]) ? match.score[1].r + '/' + match.score[1].w + ' (' + match.score[1].o + ' ov)' : '—';
-        
-        // current over 16.3 hai toh math.floor se 16 + 2 = 18 prediction over banega
-        targetOver = Math.floor(parseFloat(scoreObj.o)) + 2; 
+    var s1='—', s2='—', targetOver=12;
+    var sc = (match.score && match.score[1]) ? match.score[1] : (match.score && match.score[0] ? match.score[0] : null);
+    if (sc && sc.o) {
+        s1 = (match.score[0]) ? match.score[0].r+'/'+match.score[0].w+' ('+match.score[0].o+' ov)' : '—';
+        s2 = (match.score[1]) ? match.score[1].r+'/'+match.score[1].w+' ('+match.score[1].o+' ov)' : '—';
+        targetOver = Math.floor(parseFloat(sc.o)) + 2; 
     }
-
-    var t1 = match.teams[0] || 'Team 1';
-    var t2 = match.teams[1] || 'Team 2';
-    
-    var obj = { t1, t2, s1, s2, name: match.name, status: match.status, over: targetOver };
-    renderLiveMatch(obj, index);
-
-    // RESET PROBLEM FIX: Render ke turant baad pending bet check karein
-    restoreBetUI(targetOver, index);
+    renderLiveMatch({ t1:match.teams[0], t2:match.teams[1], s1, s2, name:match.name, status:match.status, over:targetOver }, index);
+    restoreBetUI(targetOver, index); // UI state bachane ke liye
 }
 
 function renderLiveMatch(match, index){
@@ -2401,43 +2387,48 @@ function renderLiveMatch(match, index){
    +'      <div id="jp-win-status-'+index+'" style="text-align:center; margin-top:8px; font-weight:bold;"></div>'
    +'    </div>'
    +'  </div>'
-   +'  <div class="predict-panel" style="flex:1;min-width:260px;">'
-   +'    <div class="predict-header">🏏 PREDICT MATCH SCORE &amp; WIN</div>'
-   +'    <div style="display:flex;padding:12px;gap:8px;background:#fff;">'
-   // Team 1
-   +'      <div style="flex:1;text-align:center;">'
-   +'        <img src="'+teamLogo(t1)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
-   +'        <div style="color:#28a745;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t1+'</div>'
-   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
-   +'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
-   +'          <input type="number" id="t1-run-base-'+index+'" placeholder="Runs" oninput="updateRunTarget('+index+',\'t1\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
-   +'          <input type="number" id="t1-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
-   +'        </div>'
-   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
-   +'        <select id="t1-wicket-'+index+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
-   +'      </div>'
-   // Team 2
-   +'      <div style="flex:1;text-align:center;">'
-   +'        <img src="'+teamLogo(t2)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
-   +'        <div style="color:#007bff;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t2+'</div>'
-   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
-   +'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
-   +'          <input type="number" id="t2-run-base-'+index+'" placeholder="Runs" oninput="updateRunTarget('+index+',\'t2\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
-   +'          <input type="number" id="t2-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
-   +'        </div>'
-   +'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
-   +'        <select id="t2-wicket-'+index+'" style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
-   +'      </div>'
-   +'    </div>'
-   +'    <div style="padding:15px;background:#1a1a2e;">'
-   +'      <div style="display:flex;gap:10px;width:90%;margin:0 auto;">'
-   +'        <input type="number" id="invest-amount-'+index+'" placeholder="Coins (min 10)" style="flex:1;padding:10px;text-align:center;font-weight:bold;border-radius:6px;border:none;outline:none;">'
-   +'        <button id="invest-btn-'+index+'" onclick="placePrediction('+index+')" style="flex:1;padding:10px;background:#28a745;color:white;border:none;font-weight:bold;border-radius:6px;cursor:pointer;">INVEST <i class=\'fa-solid fa-coins\'></i></button>'
-   +'      </div>'
-   +'      <p style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;">Correct prediction = 2x coins back!</p>'
-   +'    </div>'
-   +'  </div>'
-   +'</div>';
+   // Pehle check karein match live hai ya nahi (Line 2389 ke baad add karein)
+var isMLive = (s1.includes('ov') || s2.includes('ov')); 
+var lck = isMLive ? 'disabled' : '';
+var btnSty = isMLive ? 'background:#444;cursor:not-allowed;opacity:0.7;' : 'background:#28a745;cursor:pointer;';
+
+// PREDICT PANEL Section Replacement
+// PREDICT PANEL Section Replacement
++'  <div class="predict-panel" style="flex:1;min-width:260px;">'
++'    <div class="predict-header">🏏 PREDICT MATCH SCORE &amp; WIN</div>'
++'    <div style="display:flex;padding:12px;gap:8px;background:#fff;">'
+      // Team 1
++'      <div style="flex:1;text-align:center;">'
++'        <img src="'+teamLogo(t1)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
++'        <div style="color:#28a745;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t1+'</div>'
++'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
++'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
++'          <input type="number" id="t1-run-base-'+index+'" placeholder="Runs" '+lck+' oninput="updateRunTarget('+index+',\'t1\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
++'          <input type="number" id="t1-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
++'        </div>'
++'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
++'        <select id="t1-wicket-'+index+'" '+lck+' style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
++'      </div>'
+      // Team 2
++'      <div style="flex:1;text-align:center;">'
++'        <img src="'+teamLogo(t2)+'" style="height:40px;margin-bottom:5px;" onerror="this.src=\'IND.png\'">'
++'        <div style="color:#007bff;font-weight:800;font-size:0.75rem;margin-bottom:6px;">'+t2+'</div>'
++'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">RUNS</label>'
++'        <div style="display:flex;justify-content:center;margin-bottom:8px;">'
++'          <input type="number" id="t2-run-base-'+index+'" placeholder="Runs" '+lck+' oninput="updateRunTarget('+index+',\'t2\')" style="width:48%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px 0 0 5px;outline:none;text-align:center;font-size:0.85rem;">'
++'          <input type="number" id="t2-run-target-'+index+'" readonly style="width:48%;padding:6px;color:#28a745;background:#e9ecef;border:2px solid #ccc;border-left:none;border-radius:0 5px 5px 0;text-align:center;font-size:0.85rem;">'
++'        </div>'
++'        <label style="font-size:0.7rem;font-weight:bold;color:#333;display:block;margin-bottom:3px;">WICKETS</label>'
++'        <select id="t2-wicket-'+index+'" '+lck+' style="width:95%;padding:6px;color:#000;border:2px solid #ccc;border-radius:5px;"><option value="">Select</option>'+wkOpts+'</select>'
++'      </div>'
++'    </div>'
++'    <div style="padding:15px;background:#1a1a2e;">'
++'      <div style="display:flex;gap:10px;width:90%;margin:0 auto;">'
++'        <input type="number" id="invest-amount-'+index+'" placeholder="'+(isMLive?'LOCKED':'Min 10')+'" '+lck+' style="flex:1;padding:10px;text-align:center;font-weight:bold;border-radius:6px;border:none;">'
++'        <button id="invest-btn-'+index+'" '+(isMLive?'': 'onclick="placePrediction('+index+')"')+' style="flex:1;padding:10px;color:white;font-weight:bold;border-radius:6px;'+btnSty+'" '+lck+'>'+(isMLive?'LOCKED 🔒':'INVEST')+'</button>'
++'      </div>'
++'    </div>'
++'  </div>';
   container.appendChild(div);
 }
 
@@ -2477,7 +2468,7 @@ function updateUpcomingMatches(){
     var d=new Date(match.date);
     var day=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
     var time=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    var wkOpts=''; for(var w=1;w<=10;w++) wkOpts+='<option value="'+w+'">'+w+'</option>';
+    var wkOpts=''; for(var w=0;w<=10;w++) wkOpts+='<option value="'+w+'">'+w+'</option>';
     var wrapper=document.createElement('div');
     wrapper.style.cssText='display:flex;flex-direction:column;gap:8px;width:100%;';
     wrapper.innerHTML=
