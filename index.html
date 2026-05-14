@@ -906,16 +906,31 @@ function renderIPLMatches(matches){
   renderLiveMatchFromAPI(matches[0], 0);
 }
 
-function renderLiveMatchFromAPI(match, index){
-  var s1='—',s2='—';
-  if(match.score&&match.score[0]) s1=match.score[0].r+'/'+match.score[0].w+' ('+match.score[0].o+' ov)';
-  if(match.score&&match.score[1]) s2=match.score[1].r+'/'+match.score[1].w+' ('+match.score[1].o+' ov)';
-  var t1=match.teams[0]||'Team 1';
-  var t2=match.teams[1]||'Team 2';
-  var obj={t1,t2,s1,s2,name:match.name,status:match.status,over:12};
-  renderLiveMatch(obj, index);
-}
+// LINE 909
+function renderLiveMatchFromAPI(match, index) {
+    var s1 = '—', s2 = '—';
+    var targetOver = 12; // Default fallback
 
+    // Current innings ka over nikalne ka logic
+    var currentScore = (match.score && match.score[1]) ? match.score[1] : (match.score && match.score[0] ? match.score[0] : null);
+    
+    if (currentScore && currentScore.o) {
+        s1 = (match.score[0]) ? match.score[0].r + '/' + match.score[0].w + ' (' + match.score[0].o + ' ov)' : '—';
+        s2 = (match.score[1]) ? match.score[1].r + '/' + match.score[1].w + ' (' + match.score[1].o + ' ov)' : '—';
+        
+        // Logic: Agar 13.1 over chal raha hai (14th over in progress), 
+        // toh prediction 15th over ki dikhao.
+        var oversCompleted = Math.floor(parseFloat(currentScore.o));
+        targetOver = oversCompleted + 2; 
+    }
+
+    var t1 = match.teams[0] || 'Team 1';
+    var t2 = match.teams[1] || 'Team 2';
+    
+    // LINE 916: Yahan fixed '12' ki jagah 'targetOver' pass karein
+    var obj = { t1, t2, s1, s2, name: match.name, status: match.status, over: targetOver };
+    renderLiveMatch(obj, index);
+}
 function renderLiveMatch(match, index){
   index = index||0;
   var container=document.getElementById('ipl-matches-container');
@@ -1145,7 +1160,34 @@ async function loadEndedMatches(){
   });
   el.innerHTML=html;
 }
+async function restorePendingBetState(targetOver, index) {
+  if(!currentUser || !playerData) return;
 
+  // Check in DB agar is over ki pending bet already maujood hai
+  var { data: pendingJp } = await sb.from('jackpot_predictions')
+    .select('*')
+    .eq('player_id', playerData.player_id)
+    .eq('over_number', targetOver)
+    .eq('result', 'pending')
+    .single();
+
+  if(pendingJp) {
+     var btn = document.getElementById('jp-invest-btn-'+index);
+     if(btn) {
+         // Button ko lock aur disable karein
+         btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-color:rgba(0,0,0,0.2);border-top-color:#000;margin:0 auto;"></div>';
+         btn.disabled = true;
+         btn.style.background = '#aaa';
+
+         // User ka guess wapas DOM mein dal kar waiting status dikhayein
+         document.getElementById('jp-result-container-'+index).style.display = 'block';
+         document.getElementById('jp-pred-run-'+index).innerText = pendingJp.predicted_runs;
+         document.getElementById('jp-pred-six-'+index).innerText = pendingJp.predicted_sixes;
+         document.getElementById('jp-pred-four-'+index).innerText = pendingJp.predicted_fours;
+         document.getElementById('jp-win-status-'+index).innerHTML = "<span style='color:orange;'><i class='fa-solid fa-spinner fa-spin'></i> Over khatam hone ka wait kar rahe hain...</span>";
+     }
+  }
+}
 // ════════════════════════════════════════
 // RUN TARGET (+20 auto-fill)
 // ════════════════════════════════════════
