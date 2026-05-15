@@ -845,55 +845,30 @@ async function loadMyPredictions(){
 // ════════════════════════════════════════
 // LIVE MATCH — API with key rotation
 // ════════════════════════════════════════
-async function updateLiveCricketData(){
-  var container=document.getElementById('ipl-matches-container');
+async function updateLiveCricketData() {
+  var container = document.getElementById('ipl-matches-container');
 
-  // First check if admin has manually set a live match in DB
-  var { data:adminMatch } = await sb.from('live_match').select('*').eq('is_active',true).single();
-  if(adminMatch){
+  // API Call yahan se puri tarah hata di gayi hai
+  // Browser ab sirf aapke Supabase database se live data read karega
+  var { data: adminMatch, error } = await sb.from('live_match')
+                                        .select('*')
+                                        .eq('is_active', true)
+                                        .single();
+
+  if (adminMatch) {
     liveMatchData = adminMatch;
-    renderLiveMatch(adminMatch);
-    return;
-  }
-
-  // Try API
-  try {
-    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey='+getApiKey()+'&offset=0');
-    if(res.status===429||res.status===403){ rotateKey(); throw new Error('API limit'); }
-    var json = await res.json();
-    if(!json.data){ throw new Error('No data'); }
-    var ipl = json.data.filter(function(m){
-  return m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE');
-});
-    if(ipl.length>0){
-      liveMatchData = null;
-      renderIPLMatches(ipl);
-    } else {
-  container.innerHTML = `
-    <div style="text-align:center;padding:20px;color:var(--text-muted);">
-      <p>🏏 Abhi koi IPL match live nahi hai</p>
-      <p style="font-size:12px;">Match start hone par yahan show hoga</p>
-    </div>
-  `;
-}
-  } catch(e){
-    // Fallback: show last known match or empty state
-   if(!adminMatch){
-  container.innerHTML = `
-    <div style="text-align:center;padding:20px;">
-      <p style="color:orange;font-weight:bold;">
-        ⚠️ Live data load nahi hua
-      </p>
-      <p style="color:var(--text-muted);margin-bottom:10px;">
-        API issue ya limit hit ho gayi
-      </p>
-      <button onclick="openModal('adminModal')" 
-        style="padding:10px 15px;background:red;color:white;border:none;border-radius:5px;cursor:pointer;">
-        Set Match Manually (Admin)
-      </button>
-    </div>
-  `;
-}
+    renderLiveMatch(adminMatch); 
+    
+    // Naya: Target over calculation aur bet UI restore logic trigger karna
+    // Taaki naye data ke saath user ki bet gayab na ho
+    var currentOv = parseFloat(adminMatch.s2.includes('ov') ? adminMatch.s2.split('(')[1] : adminMatch.s1.split('(')[1]) || 0;
+    if(typeof restoreBetUI === "function") restoreBetUI(Math.floor(currentOv) + 2, 0);
+  } else {
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text-muted);">
+        <p>🏏 Abhi koi IPL match live nahi hai</p>
+        <p style="font-size:12px;">Admin ke match start karte hi yahan show hoga</p>
+      </div>`;
   }
 }
 
@@ -917,7 +892,30 @@ function renderLiveMatchFromAPI(match, index) {
     renderLiveMatch({ t1:match.teams[0], t2:match.teams[1], s1, s2, name:match.name, status:match.status, over:targetOver }, index);
     restoreBetUI(targetOver, index); // UI state bachane ke liye
 }
+async function startMasterSync() {
+  setInterval(async () => {
+    try {
+      // 1. API se data lo (Sirf Admin ke browser se call jayega)
+      var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+      var json = await res.json();
+      var match = json.data.find(m => m.name.includes('IPL'));
 
+      if (match) {
+        // 2. Database (Supabase) mein save karo
+        await sb.from('live_match').upsert({
+          id: 1,
+          name: match.name,
+          s1: match.score[0]?.r + "/" + match.score[0]?.w + " (" + match.score[0]?.o + " ov)",
+          s2: match.score[1]?.r + "/" + match.score[1]?.w + " (" + match.score[1]?.o + " ov)",
+          status: match.status,
+          current_over: Math.floor(match.score[0]?.o || 0),
+          is_active: true
+        });
+        console.log("Database Updated for all users!");
+      }
+    } catch (e) { rotateKey(); }
+  }, 120000); // 2 minute sync
+}
 function renderLiveMatch(match, index){
   index = index||0;
   var container=document.getElementById('ipl-matches-container');
@@ -1564,6 +1562,62 @@ async function adminToggleBan(pid, ban){
   loadAdminUsers();
   showFancyAlert(ban?'Player Banned!':'Player Unbanned!');
 }
+// Ye function sirf Admin ke system par chalna chahiye
+async function syncApiToDatabase() {
+  try {
+    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+    var json = await res.json();
+    var match = json.data.find(m => m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE'));
+
+    if (match && match.score) {
+      var s1 = match.score[0] ? match.score[0].r + "/" + match.score[0].w + " (" + match.score[0].o + " ov)" : "—";
+      var s2 = match.score[1] ? match.score[1].r + "/" + match.score[1].w + " (" + match.score[1].o + " ov)" : "—";
+      
+      // Sabhi users ke liye Database update karein
+      await sb.from('live_match').upsert({
+        id: 1,
+        name: match.name,
+        s1: s1, s2: s2,
+        status: match.status,
+        current_over: Math.floor(parseFloat(match.score[1]?.o || match.score[0]?.o || 0)),
+        is_active: true,
+        updated_at: new Date().toISOString()
+      });
+      console.log("Master Sync: DB Updated");
+    }
+  } catch (e) { rotateKey(); }
+}
+
+// Sirf tab chalayein jab aap Admin ho (e.g., admin panel open hone par)
+// setInterval(syncApiToDatabase, 120000);
+
+async function masterSyncApiToDB() {
+  try {
+    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+    var json = await res.json();
+    var ipl = json.data.find(m => m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE'));
+
+    if (ipl && ipl.score) {
+      var s1 = ipl.score[0] ? ipl.score[0].r + "/" + ipl.score[0].w + " (" + ipl.score[0].o + " ov)" : "—";
+      var s2 = ipl.score[1] ? ipl.score[1].r + "/" + ipl.score[1].w + " (" + ipl.score[1].o + " ov)" : "—";
+      
+      // Sabhi 1000 users ke liye Database update karna
+      await sb.from('live_match').upsert({
+        id: 1,
+        name: ipl.name,
+        s1: s1, s2: s2,
+        status: ipl.status,
+        current_over: Math.floor(parseFloat(ipl.score[1]?.o || ipl.score[0]?.o || 0)),
+        is_active: true,
+        updated_at: new Date().toISOString()
+      });
+      console.log("Master Sync Success: DB Updated");
+    }
+  } catch (e) { rotateKey(); }
+}
+
+// Ise Admin panel ke modal open hone par ya kisi toggle se start karein
+// setInterval(masterSyncApiToDB, 120000);
 
 async function adminAddCoins(pid){
   var amount=prompt('Kitne coins add karein?');

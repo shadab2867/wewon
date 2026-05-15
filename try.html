@@ -88,17 +88,17 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .upcoming-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:10px 15px;}
 @media(min-width:768px){.upcoming-grid{grid-template-columns:1fr 1fr;}}
 .bottom-nav{
-  position:fixed !important;left:0 !important;bottom:0 !important;width:100% !important;
+  position:fixed !important;left:0 !important;right:0 !important;bottom:0 !important;width:100% !important;
   background:linear-gradient(to top, rgba(4,6,11,0.98), rgba(10,10,15,0.95));
   display:flex !important;justify-content:space-around;align-items:center;
   padding:10px 0 14px;border-top:2px solid rgba(255,0,51,0.25) !important;
-  z-index:9999 !important;box-shadow:0 -4px 24px rgba(0,0,0,0.45) !important;
+  z-index:10000 !important;box-shadow:0 -4px 24px rgba(0,0,0,0.45) !important;
 }
 #nav-aviator {
   position: relative !important;
   z-index: 9999 !important;
 }
-body{padding-bottom:120px;}
+body{padding-bottom:160px;}
 .nav-item{
   display:flex;flex-direction:column;align-items:center;
   color:var(--text-muted);font-size:10px;cursor:pointer;gap:3px;
@@ -823,7 +823,9 @@ body{padding-bottom:120px;}
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 0;
+    display: block;
+    background: #0b1c2c;
 }
 
 .skyhigh-multiplier-text {
@@ -1274,7 +1276,7 @@ body{padding-bottom:120px;}
     </div>
 
     <!-- AVIATOR -->
-    <div class="nav-item active" id="nav-aviator" style="position:relative; z-index:9999;" onclick="switchTab('skyhigh-section', 'nav-aviator')">
+    <div class="nav-item" id="nav-aviator" style="position:relative; z-index:9999;" onclick="switchTab('skyhigh-section', 'nav-aviator')">
         <i class="fas fa-solid fa-rocket"></i>
         <span>Aviator</span>
     </div>
@@ -2284,6 +2286,30 @@ async function syncAPI(){ await updateLiveCricketData(); showFancyAlert('API syn
 function renderIPLMatches(matches){
   renderLiveMatchFromAPI(matches[0], 0);
 }
+async function startMasterSync() {
+  setInterval(async () => {
+    try {
+      // 1. API se data lo (Sirf Admin ke browser se call jayega)
+      var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+      var json = await res.json();
+      var match = json.data.find(m => m.name.includes('IPL'));
+
+      if (match) {
+        // 2. Database (Supabase) mein save karo
+        await sb.from('live_match').upsert({
+          id: 1,
+          name: match.name,
+          s1: match.score[0]?.r + "/" + match.score[0]?.w + " (" + match.score[0]?.o + " ov)",
+          s2: match.score[1]?.r + "/" + match.score[1]?.w + " (" + match.score[1]?.o + " ov)",
+          status: match.status,
+          current_over: Math.floor(match.score[0]?.o || 0),
+          is_active: true
+        });
+        console.log("Database Updated for all users!");
+      }
+    } catch (e) { rotateKey(); }
+  }, 120000); // 2 minute sync
+}
 
 function renderLiveMatchFromAPI(match, index) {
     var s1='—', s2='—', targetOver=12;
@@ -3024,6 +3050,63 @@ async function adminEndMatch(){
   showFancyAlert('Match ended!\n'+result+'\nHistory mein add ho gaya.');
   closeModal('adminModal');
 }
+// Ye function sirf Admin ke system par chalna chahiye
+async function syncApiToDatabase() {
+  try {
+    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+    var json = await res.json();
+    var match = json.data.find(m => m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE'));
+
+    if (match && match.score) {
+      var s1 = match.score[0] ? match.score[0].r + "/" + match.score[0].w + " (" + match.score[0].o + " ov)" : "—";
+      var s2 = match.score[1] ? match.score[1].r + "/" + match.score[1].w + " (" + match.score[1].o + " ov)" : "—";
+      
+      // Sabhi users ke liye Database update karein
+      await sb.from('live_match').upsert({
+        id: 1,
+        name: match.name,
+        s1: s1, s2: s2,
+        status: match.status,
+        current_over: Math.floor(parseFloat(match.score[1]?.o || match.score[0]?.o || 0)),
+        is_active: true,
+        updated_at: new Date().toISOString()
+      });
+      console.log("Master Sync: DB Updated");
+    }
+  } catch (e) { rotateKey(); }
+}
+
+// Sirf tab chalayein jab aap Admin ho (e.g., admin panel open hone par)
+// setInterval(syncApiToDatabase, 120000);
+
+async function masterSyncApiToDB() {
+  try {
+    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+    var json = await res.json();
+    var ipl = json.data.find(m => m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE'));
+
+    if (ipl && ipl.score) {
+      var s1 = ipl.score[0] ? ipl.score[0].r + "/" + ipl.score[0].w + " (" + ipl.score[0].o + " ov)" : "—";
+      var s2 = ipl.score[1] ? ipl.score[1].r + "/" + ipl.score[1].w + " (" + ipl.score[1].o + " ov)" : "—";
+      
+      // Sabhi 1000 users ke liye Database update karna
+      await sb.from('live_match').upsert({
+        id: 1,
+        name: ipl.name,
+        s1: s1, s2: s2,
+        status: ipl.status,
+        current_over: Math.floor(parseFloat(ipl.score[1]?.o || ipl.score[0]?.o || 0)),
+        is_active: true,
+        updated_at: new Date().toISOString()
+      });
+      console.log("Master Sync Success: DB Updated");
+    }
+  } catch (e) { rotateKey(); }
+}
+
+// Ise Admin panel ke modal open hone par ya kisi toggle se start karein
+// setInterval(masterSyncApiToDB, 120000);
+
 
 function triggerLiveNotif(){
   var txt=document.getElementById('newNotif').value.trim();
