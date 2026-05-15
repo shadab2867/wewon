@@ -847,9 +847,9 @@ async function loadMyPredictions(){
 // ════════════════════════════════════════
 async function updateLiveCricketData() {
   var container = document.getElementById('ipl-matches-container');
+  if (!container) return;
 
-  // API Call yahan se puri tarah hata di gayi hai
-  // Browser ab sirf aapke Supabase database se live data read karega
+  // 1. Try DB first for admin-driven live match data
   var { data: adminMatch, error } = await sb.from('live_match')
                                         .select('*')
                                         .eq('is_active', true)
@@ -857,19 +857,36 @@ async function updateLiveCricketData() {
 
   if (adminMatch) {
     liveMatchData = adminMatch;
-    renderLiveMatch(adminMatch); 
-    
-    // Naya: Target over calculation aur bet UI restore logic trigger karna
-    // Taaki naye data ke saath user ki bet gayab na ho
-    var currentOv = parseFloat(adminMatch.s2.includes('ov') ? adminMatch.s2.split('(')[1] : adminMatch.s1.split('(')[1]) || 0;
+    renderLiveMatch(adminMatch);
+    var currentOv = 0;
+    if (adminMatch.s2 && adminMatch.s2.includes('ov')) {
+      currentOv = parseFloat(adminMatch.s2.split('(')[1]) || 0;
+    } else if (adminMatch.s1 && adminMatch.s1.includes('ov')) {
+      currentOv = parseFloat(adminMatch.s1.split('(')[1]) || 0;
+    }
     if(typeof restoreBetUI === "function") restoreBetUI(Math.floor(currentOv) + 2, 0);
-  } else {
-    container.innerHTML = `
-      <div style="text-align:center;padding:20px;color:var(--text-muted);">
-        <p>🏏 Abhi koi IPL match live nahi hai</p>
-        <p style="font-size:12px;">Admin ke match start karte hi yahan show hoga</p>
-      </div>`;
+    return;
   }
+
+  // 2. Fallback to live API if no active DB match found
+  try {
+    var res = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=' + getApiKey());
+    var json = await res.json();
+    var match = json.data && json.data.find(m => m.name && m.name.toUpperCase().includes('INDIAN PREMIER LEAGUE'));
+    if (match && match.score && match.score.length > 0) {
+      renderLiveMatchFromAPI(match, 0);
+      return;
+    }
+  } catch (e) {
+    console.warn('Live API fallback failed:', e);
+    rotateKey();
+  }
+
+  container.innerHTML = `
+    <div style="text-align:center;padding:20px;color:var(--text-muted);">
+      <p>🏏 Abhi koi IPL match live nahi hai</p>
+      <p style="font-size:12px;">Admin ke match start karte hi yahan show hoga</p>
+    </div>`;
 }
 
 async function syncAPI(){ await updateLiveCricketData(); showFancyAlert('API synced!'); }
