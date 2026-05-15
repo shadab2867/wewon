@@ -957,11 +957,11 @@ async function handleRegister(){
     auth_id: data.user.id,
     name: name,
     player_id: pid,
-    mobile: mobile,
+    mobile_or_email: mobile,
     coins: 500,
     referral_code: pid,
     created_at: new Date().toISOString()
-});
+  });
 
     if(dbErr){ 
         setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!'); 
