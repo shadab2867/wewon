@@ -1812,39 +1812,48 @@ async function handleRegister(){
     var pass   = document.getElementById('regPass').value;
     var ref    = document.getElementById('regRef').value.trim();
 
-    // Validation
-    if(!name || !mobile || !email || !pass){ 
-        showFancyAlert('Bhai, saari details bharna zaroori hai! 🛑'); 
-        return; 
+
+    // Validation: require name, password and at least one of mobile/email
+    if (!name || !pass || (!mobile && !email)) {
+      showFancyAlert('Bhai, naam + password aur mobile ya email zaroori hai! 🛑');
+      return;
     }
-    if(pass.length < 6){ 
-        showFancyAlert('Password kam se kam 6 characters ka hona chahiye! 🔐'); 
-        return; 
+    if (pass.length < 6) {
+      showFancyAlert('Password kam se kam 6 characters ka hona chahiye! 🔐');
+      return;
     }
 
     setBtnLoading('reg-btn', true, '');
 
-    // 1. Supabase Auth (Email + Pass)
-    var { data, error } = await sb.auth.signUp({ email, password: pass });
+    // Prepare auth email: allow mobile-only signup by converting to pseudo-email
+    var authEmail = '';
+    if (email && email.includes('@')) authEmail = email;
+    else if (mobile) authEmail = mobile + '@wewin.game';
+    else authEmail = email || (mobile + '@wewin.game');
 
-    if(error){ 
-        setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!'); 
-        showFancyAlert('Error: ' + error.message); 
-        return; 
+    // 1. Supabase Auth (Email + Pass)
+    var { data, error } = await sb.auth.signUp({ email: authEmail, password: pass });
+
+    if (error) {
+      setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!');
+      showFancyAlert('Error: ' + error.message);
+      return;
     }
 
     var pid = generatePlayerId();
 
     // 2. Insert Player Record (Database) - with 500 coin welcome bonus
+    // 2. Insert Player Record (Database) - store whichever identifier user provided
+    var identifier = (mobile && mobile.length>0) ? mobile : (email || authEmail);
     var { error: dbErr } = await sb.from('players').insert({
-    auth_id: data.user.id,
-    name: name,
-    player_id: pid,
-    mobile_or_email: mobile,
-    coins: 500,
-    referral_code: pid,
-    created_at: new Date().toISOString()
-  });
+      auth_id: data.user.id,
+      name: name,
+      player_id: pid,
+      mobile_or_email: identifier,
+      coins: 500,
+      referral_code: pid,
+      created_at: new Date().toISOString()
+    });
 
     if(dbErr){ 
         setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!'); 
