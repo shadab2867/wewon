@@ -1840,13 +1840,35 @@ async function handleRegister(){
       return;
     }
 
+    // Ensure we have a signed-in user object. Some Supabase setups do not return user immediately.
+    let userObj = data && data.user ? data.user : null;
+    if (!userObj) {
+      // Try to sign in right away
+      try {
+        const { data: sd, error: se } = await sb.auth.signInWithPassword({ email: authEmail, password: pass });
+        if (se) {
+          console.warn('Auto sign-in after signUp failed:', se.message);
+        } else {
+          userObj = sd && sd.user ? sd.user : null;
+        }
+      } catch (e) {
+        console.warn('Auto sign-in error:', e);
+      }
+    }
+
+    if (!userObj) {
+      setBtnLoading('reg-btn', false, 'Register & Get 500 Coins Free!');
+      showFancyAlert('Registration created — please verify your email and then log in.');
+      return;
+    }
+
     var pid = generatePlayerId();
 
     // 2. Insert Player Record (Database) - with 500 coin welcome bonus
     // 2. Insert Player Record (Database) - store whichever identifier user provided
     var identifier = (mobile && mobile.length>0) ? mobile : (email || authEmail);
     var { error: dbErr } = await sb.from('players').insert({
-      auth_id: data.user.id,
+      auth_id: userObj.id,
       name: name,
       player_id: pid,
       mobile_or_email: identifier,
