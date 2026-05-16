@@ -3357,16 +3357,93 @@ let skyhighGameState = {
   currentMultiplier: 1.0,
   planeX: 0,
   planeY: 0,
+  planeVY: 1.4,
   crashMultiplier: 0,
   canvas: null,
   ctx: null,
   animationId: null,
+  countdownTimeout: null,
+  countdownInterval: null,
+  waveOffset: 0,
+  resizeListenerAdded: false,
   betAmount: 10,
   autoCashout: false,
   autoTarget: 2.0,
   activeBets: [],
   gameHistory: []
 };
+
+function skyhighResizeCanvas(){
+    if(!skyhighGameState.canvas) return;
+    var ratio = window.devicePixelRatio || 1;
+    var rect = skyhighGameState.canvas.getBoundingClientRect();
+    skyhighGameState.canvas.width = rect.width * ratio;
+    skyhighGameState.canvas.height = rect.height * ratio;
+    skyhighGameState.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function skyhighDrawSkyWave(width, height){
+    var ctx = skyhighGameState.ctx;
+    var baseY = height * 0.65;
+    var amplitude = height * 0.08;
+    var waveHeight = height * 0.12;
+    var offset = skyhighGameState.waveOffset;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    ctx.lineTo(0, baseY + Math.sin(offset) * amplitude);
+
+    for(var x = 0; x <= width; x += 12){
+        var y = baseY + Math.sin((x / 60) + offset) * amplitude + Math.cos((x / 30) + offset * 1.5) * (amplitude * 0.25);
+        ctx.lineTo(x, y);
+    }
+
+    ctx.lineTo(width, height);
+    ctx.closePath();
+
+    var grad = ctx.createLinearGradient(0, baseY - waveHeight, 0, height);
+    grad.addColorStop(0, 'rgba(255, 60, 60, 0.55)');
+    grad.addColorStop(1, 'rgba(120, 0, 0, 0.08)');
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+}
+
+function skyhighDrawPlane(x, y){
+    var ctx = skyhighGameState.ctx;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.12);
+    ctx.shadowColor = 'rgba(255, 0, 0, 0.45)';
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = '#ff3b3b';
+    ctx.strokeStyle = '#ff8a8a';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(-20, 0);
+    ctx.lineTo(15, -8);
+    ctx.lineTo(45, -6);
+    ctx.lineTo(55, 0);
+    ctx.lineTo(45, 6);
+    ctx.lineTo(15, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(15, 2);
+    ctx.lineTo(5, -18);
+    ctx.lineTo(25, -18);
+    ctx.lineTo(35, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
 
 function initSkyHighGame(){
     if(!currentUser || !playerData){
@@ -3385,6 +3462,11 @@ function initSkyHighGame(){
     skyhighGameState.canvas = document.getElementById('skyhigh-gameCanvas');
     if(skyhighGameState.canvas) {
         skyhighGameState.ctx = skyhighGameState.canvas.getContext('2d');
+        skyhighResizeCanvas();
+        if(!skyhighGameState.resizeListenerAdded){
+            window.addEventListener('resize', skyhighResizeCanvas);
+            skyhighGameState.resizeListenerAdded = true;
+        }
         // Agar game ruka hua hai toh loop shuru karo
         if(!skyhighGameState.gameRunning) {
             console.log("Plane Engine Starting...");
@@ -3618,33 +3700,57 @@ function skyhighPlaceBet(panel, amount, isAuto, autoTarget){
 }
 function skyhighStartNextRound() {
     console.log("Preparing next round...");
-    
-    // Reset Multiplier and UI
+
+    if(skyhighGameState.countdownTimeout){
+        clearTimeout(skyhighGameState.countdownTimeout);
+        skyhighGameState.countdownTimeout = null;
+    }
+    if(skyhighGameState.countdownInterval){
+        clearInterval(skyhighGameState.countdownInterval);
+        skyhighGameState.countdownInterval = null;
+    }
+
     skyhighGameState.currentMultiplier = 1.0;
     skyhighGameState.gameRunning = false;
-    
-    // Clear Canvas for fresh start
+    skyhighGameState.planeX = skyhighGameState.canvas ? (skyhighGameState.canvas.getBoundingClientRect().width * 0.12) : 0;
+    skyhighGameState.planeY = skyhighGameState.canvas ? (skyhighGameState.canvas.getBoundingClientRect().height * 0.5) : 0;
+    skyhighGameState.waveOffset = 0;
+    skyhighGameState.planeVY = 1.4;
+
     if(skyhighGameState.ctx) {
+        skyhighResizeCanvas();
         skyhighGameState.ctx.clearRect(0, 0, skyhighGameState.canvas.width, skyhighGameState.canvas.height);
     }
 
-    // Kuch seconds wait karke plane udayein (sirf agar koi bet lagi ho)
-    setTimeout(() => {
-        skyhighShowCountdown(3); // Ab plane hamesha udyega!
-    }, 2000);
+    skyhighGameState.countdownTimeout = setTimeout(() => {
+        if(!skyhighGameState.countdownInterval){
+            skyhighShowCountdown(3); // Ab plane hamesha udyega!
+        }
+    }, 1200);
+
+    var display = document.getElementById('skyhigh-multiplier');
+    if(display){
+        display.innerText = '1.00x';
+    }
 }
 
 function skyhighShowCountdown(seconds) {
+    if(skyhighGameState.countdownInterval){
+        clearInterval(skyhighGameState.countdownInterval);
+        skyhighGameState.countdownInterval = null;
+    }
+
     const display = document.getElementById('skyhigh-multiplier');
     let counter = seconds;
     if(display) {
         display.innerText = 'Next Round in ' + counter + '...';
     }
-    const countdown = setInterval(() => {
+    skyhighGameState.countdownInterval = setInterval(() => {
         counter -= 1;
         if (display) display.innerText = counter > 0 ? 'Next Round in ' + counter + '...' : 'Takeoff!';
         if (counter <= 0) {
-            clearInterval(countdown);
+            clearInterval(skyhighGameState.countdownInterval);
+            skyhighGameState.countdownInterval = null;
             skyhighStartGame();
         }
     }, 1000);
@@ -3690,21 +3796,29 @@ function skyhighStartGame() {
         return;
     }
     skyhighGameState.ctx = skyhighGameState.canvas.getContext('2d');
+    skyhighResizeCanvas();
 
     skyhighGameState.gameRunning = true;
     skyhighGameState.currentMultiplier = 1.0;
     skyhighGameState.startTime = Date.now();
-    skyhighGameState.planeX = 0;
-    skyhighGameState.planeY = skyhighGameState.canvas.height / 2;
+    skyhighGameState.planeX = skyhighGameState.canvas.getBoundingClientRect().width * 0.12;
+    skyhighGameState.planeY = skyhighGameState.canvas.getBoundingClientRect().height * 0.5;
+    skyhighGameState.planeVY = 1.4;
+    skyhighGameState.waveOffset = 0;
 
     document.getElementById('skyhigh-crashMsg').style.display = 'none';
-    skyhighGameState.crashAt = (Math.random() * 5 + 1.1).toFixed(2); 
+    skyhighGameState.crashAt = skyhighGenerateCrashMultiplier();
 
     function updateMultiplier() {
         if (!skyhighGameState.gameRunning) return;
 
         let elapsed = (Date.now() - skyhighGameState.startTime) / 1000;
-        skyhighGameState.currentMultiplier = Math.pow(1.08, elapsed); 
+        skyhighGameState.currentMultiplier = Math.pow(1.08, elapsed);
+        skyhighGameState.waveOffset += 0.05;
+
+        var rect = skyhighGameState.canvas.getBoundingClientRect();
+        var width = rect.width;
+        var height = rect.height;
 
         // Multiplier Update
         let mText = document.getElementById('skyhigh-multiplier');
@@ -3713,10 +3827,35 @@ function skyhighStartGame() {
         // Drawing
         let ctx = skyhighGameState.ctx;
         ctx.clearRect(0, 0, skyhighGameState.canvas.width, skyhighGameState.canvas.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '35px Arial';
-        ctx.fillText('✈️', skyhighGameState.planeX, skyhighGameState.planeY);
-        skyhighGameState.planeX += 2;
+        ctx.fillStyle = '#06111f';
+        ctx.fillRect(0, 0, width, height);
+        skyhighDrawSkyWave(width, height);
+
+        skyhighGameState.planeX += 2.4 + Math.sin(elapsed * 1.4) * 0.35;
+        skyhighGameState.planeY += skyhighGameState.planeVY;
+
+        var minY = height * 0.2;
+        var maxY = height * 0.8;
+        if(skyhighGameState.planeY < minY){
+            skyhighGameState.planeY = minY;
+            skyhighGameState.planeVY = Math.abs(skyhighGameState.planeVY) * 0.95;
+        }
+        if(skyhighGameState.planeY > maxY){
+            skyhighGameState.planeY = maxY;
+            skyhighGameState.planeVY = -Math.abs(skyhighGameState.planeVY) * 0.95;
+        }
+
+        if(Math.random() < 0.02){
+            skyhighGameState.planeVY += (Math.random() - 0.5) * 0.5;
+            skyhighGameState.planeVY = Math.max(-2.5, Math.min(2.5, skyhighGameState.planeVY));
+        }
+
+        var maxX = width * 0.82;
+        if(skyhighGameState.planeX > maxX){
+            skyhighGameState.planeX = maxX;
+        }
+
+        skyhighDrawPlane(skyhighGameState.planeX, skyhighGameState.planeY);
 
         // Auto Cashout & Crash Check
         skyhighProcessAutoCashouts();
@@ -3757,6 +3896,10 @@ function skyhighStopGame(){
 
     skyhighGameState.activeBets = [];
     skyhighAddToHistory(parseFloat(skyhighGameState.crashAt), 0);
+
+    setTimeout(() => {
+        skyhighStartNextRound();
+    }, 2500);
 }
 
 function skyhighProcessAutoCashouts(){
